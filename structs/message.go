@@ -3,20 +3,40 @@ package structs
 import (
 	"bytes"
 	"encoding/binary"
-	"os"
+	"errors"
+	"time"
 
+	"github.com/SteMak/prepaid_gas_server/config"
 	"github.com/ethereum/go-ethereum/crypto"
 )
 
+var (
+	pad = [32]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	err error
+)
+
 type Message struct {
-	Signer   []byte
-	Nonce    []byte
-	GasOrder []byte
-	OnBehalf []byte
-	Deadline uint32
-	Endpoint []byte
-	Gas      []byte
+	Signer   Address
+	Nonce    Uint256
+	GasOrder Uint256
+	OnBehalf Address
+	Deadline Uint256
+	Endpoint Address
+	Gas      Uint256
 	Data     []byte
+}
+
+func (message Message) ValidateEarlyLiquidation(execution_window int64) error {
+	deadline, err := message.Deadline.ToUint32()
+	if err != nil {
+		return err
+	}
+
+	if int64(deadline) <= time.Now().Unix()+execution_window {
+		return errors.New("message: early liquidation is possible")
+	}
+
+	return nil
 }
 
 func MessageTypeHash() []byte {
@@ -35,35 +55,47 @@ func MessageTypeHash() []byte {
 }
 
 func MessageEncode(message Message) []byte {
-	pad := []byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-
 	buf := []byte{}
 
-	data_len := make([]byte, 8)
+	data_len := make([]byte, 32)
 	binary.BigEndian.PutUint64(data_len, uint64(len(message.Data)))
-	data_len = bytes.Join([][]byte{pad[0:24], data_len}, []byte{})
-
-	deadline := make([]byte, 4)
-	binary.BigEndian.PutUint32(deadline, message.Deadline)
-	deadline = bytes.Join([][]byte{pad[0:28], deadline}, []byte{})
 
 	buf = bytes.Join([][]byte{buf,
-		pad[0:12], message.Signer,
-		message.Nonce,
-		message.GasOrder,
-		pad[0:12], message.OnBehalf,
-		deadline,
-		pad[0:12], message.Endpoint,
-		message.Gas,
-		pad[0:31], {32}, data_len, message.Data, pad[0 : (32-len(message.Data)%32)%32],
+		pad[0:12], message.Signer[:],
+		message.Nonce[:],
+		message.GasOrder[:],
+		pad[0:12], message.OnBehalf[:],
+		message.Deadline[:],
+		pad[0:12], message.Endpoint[:],
+		message.Gas[:],
+		// Address of data start in terms of current ctx (the struct)
+		pad[0:30], {1, 0},
+		data_len,
+		message.Data, pad[0 : (32-len(message.Data)%32)%32],
 	}, []byte{})
 
 	return buf
 }
 
 func MessageHash(message Message) []byte {
-	struct_hash := crypto.Keccak256(bytes.Join([][]byte{MessageTypeHash(), MessageEncode(message)}, []byte{}))
-	domain_separator := []byte(os.Getenv("DOMAIN_SEPARATOR"))
+	// https://ethereum.stackexchange.com/questions/113394/how-output-of-abi-encode-calculated
+	struct_hash := crypto.Keccak256(bytes.Join([][]byte{
+		MessageTypeHash(),
+		// Address of struct start in terms of current ctx (function parameters)
+		pad[0:31], {64},
+		MessageEncode(message),
+	}, []byte{}))
 
-	return crypto.Keccak256(bytes.Join([][]byte{[]byte("\x19\x01"), domain_separator, struct_hash}, []byte{}))
+	return crypto.Keccak256(bytes.Join([][]byte{[]byte("\x19\x01"), config.DomainSeparator, struct_hash}, []byte{}))
+}
+
+func SignMessage(message Message) ([]byte, error) {
+	hash := MessageHash(message)
+
+	signature, err := crypto.Sign(hash, config.ValidatorPkey)
+	if err != nil {
+		return nil, err
+	}
+
+	return signature, nil
 }

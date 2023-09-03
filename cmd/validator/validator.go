@@ -3,61 +3,58 @@ package main
 import (
 	"encoding/hex"
 	"encoding/json"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
-	"os"
-	"time"
+	"strconv"
 
+	"github.com/SteMak/prepaid_gas_server/config"
 	"github.com/SteMak/prepaid_gas_server/structs"
-	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/joho/godotenv"
 )
 
-func SignMessage(message structs.Message) []byte {
-	hash := structs.MessageHash(message)
-
-	pkey, err := crypto.HexToECDSA(os.Getenv("VALIDATOR_PKEY"))
-	if err != nil {
-		fmt.Println("Bad PKEY:", err)
-		return []byte{}
-	}
-
-	signature, err := crypto.Sign(hash, pkey)
-	if err != nil {
-		fmt.Println("Bad SIGN:", err)
-		return []byte{}
-	}
-
-	return signature
-}
+var (
+	err error
+)
 
 func Validator(w http.ResponseWriter, r *http.Request) {
 	var message structs.Message
 
-	err := json.NewDecoder(r.Body).Decode(&message)
+	err = json.NewDecoder(r.Body).Decode(&message)
 	if err != nil {
-		fmt.Println("Bad MESS:", err)
+		io.WriteString(w, err.Error())
 		return
 	}
 
-	// TODO: Validate message fields has proper length
-
-	if int64(message.Deadline) <= time.Now().Unix()+20 {
-		io.WriteString(w, "Bad DEADLINE")
+	err = message.ValidateEarlyLiquidation(20)
+	if err != nil {
+		io.WriteString(w, err.Error())
 		return
 	}
 
-	io.WriteString(w, hex.EncodeToString(SignMessage(message)))
+	sign, err := structs.SignMessage(message)
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+
+	io.WriteString(w, hex.EncodeToString(sign))
 }
 
 func main() {
-	godotenv.Load()
+	err = godotenv.Load()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	err = config.Init()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 
 	http.HandleFunc("/", Validator)
 
-	err := http.ListenAndServe(":"+os.Getenv("VALIDATOR_PORT"), nil)
+	err = http.ListenAndServe(":"+strconv.Itoa(config.ValidatorPort), nil)
 	if err != nil {
-		fmt.Println("Bad HTTP:", err)
+		log.Fatalln(err.Error())
 	}
 }
