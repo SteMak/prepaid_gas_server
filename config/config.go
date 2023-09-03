@@ -15,6 +15,9 @@ var (
 	ValidatorPort   int
 	DomainSeparator []byte
 
+	PostgresUser     string
+	PostgresPassword string
+
 	err error
 )
 
@@ -37,6 +40,9 @@ func Init() error {
 	if err != nil {
 		return errors.New("config: validator port load error")
 	}
+
+	PostgresUser = os.Getenv("POSTGRES_USER")
+	PostgresPassword = os.Getenv("POSTGRES_PASSWORD")
 
 	return nil
 }

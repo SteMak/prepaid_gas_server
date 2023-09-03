@@ -1,60 +1,52 @@
 package main
 
 import (
-	"encoding/hex"
-	"encoding/json"
-	"io"
 	"log"
-	"net/http"
-	"strconv"
+	"sync"
+
+	"github.com/joho/godotenv"
 
 	"github.com/SteMak/prepaid_gas_server/config"
-	"github.com/SteMak/prepaid_gas_server/structs"
-	"github.com/joho/godotenv"
+	"github.com/SteMak/prepaid_gas_server/db"
+	"github.com/SteMak/prepaid_gas_server/http"
 )
 
 var (
 	err error
 )
 
-func Validator(w http.ResponseWriter, r *http.Request) {
-	var message structs.Message
-
-	err = json.NewDecoder(r.Body).Decode(&message)
-	if err != nil {
-		io.WriteString(w, err.Error())
-		return
-	}
-
-	err = message.ValidateEarlyLiquidation(20)
-	if err != nil {
-		io.WriteString(w, err.Error())
-		return
-	}
-
-	sign, err := structs.SignMessage(message)
-	if err != nil {
-		io.WriteString(w, err.Error())
-		return
-	}
-
-	io.WriteString(w, hex.EncodeToString(sign))
-}
-
 func main() {
-	err = godotenv.Load()
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
-	err = config.Init()
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
+	var wg sync.WaitGroup
 
-	http.HandleFunc("/", Validator)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-	err = http.ListenAndServe(":"+strconv.Itoa(config.ValidatorPort), nil)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
+		err = godotenv.Load()
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+
+		err = config.Init()
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		err = db.Init()
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+
+		err = http.Init()
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
+	}()
+
+	wg.Wait()
 }

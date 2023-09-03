@@ -6,8 +6,9 @@ import (
 	"errors"
 	"time"
 
-	"github.com/SteMak/prepaid_gas_server/config"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/SteMak/prepaid_gas_server/config"
 )
 
 var (
