@@ -8,8 +8,8 @@ import (
 
 	_ "github.com/lib/pq"
 
-	"github.com/SteMak/prepaid_gas_server/config"
-	"github.com/SteMak/prepaid_gas_server/structs"
+	"github.com/SteMak/prepaid_gas_server/go_modules/config"
+	"github.com/SteMak/prepaid_gas_server/go_modules/structs"
 )
 
 var (

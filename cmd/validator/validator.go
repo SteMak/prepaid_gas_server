@@ -5,9 +5,9 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/SteMak/prepaid_gas_server/config"
-	"github.com/SteMak/prepaid_gas_server/db"
-	"github.com/SteMak/prepaid_gas_server/http"
+	"github.com/SteMak/prepaid_gas_server/go_modules/config"
+	"github.com/SteMak/prepaid_gas_server/go_modules/db"
+	"github.com/SteMak/prepaid_gas_server/go_modules/http"
 )
 
 var (

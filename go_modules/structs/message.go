@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/SteMak/prepaid_gas_server/config"
+	"github.com/SteMak/prepaid_gas_server/go_modules/config"
 )
 
 var (
