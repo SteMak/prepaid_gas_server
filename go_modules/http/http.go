@@ -24,31 +24,37 @@ func Init() error {
 }
 
 func Validator(w http.ResponseWriter, r *http.Request) {
-	var message structs.Message
+	var request structs.RequestInsert
 
-	err = json.NewDecoder(r.Body).Decode(&message)
+	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	err = message.ValidateEarlyLiquidation(20)
+	err = request.Message.ValidateEarlyLiquidation(20)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	sign, err := message.Sign()
+	err = request.Sign.Verify(request.Message.DigestHash(), request.Message.Signer)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	err = db.InsertMessage(message, sign)
+	valid, err := request.Message.Sign()
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	io.WriteString(w, hex.EncodeToString(sign))
+	err = db.InsertMessage(request.Message, request.Sign[:], valid)
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+
+	io.WriteString(w, hex.EncodeToString(valid))
 }
