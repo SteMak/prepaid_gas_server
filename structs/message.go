@@ -40,7 +40,7 @@ func (message Message) ValidateEarlyLiquidation(execution_window int64) error {
 	return nil
 }
 
-func MessageTypeHash() []byte {
+func (_ Message) TypeHash() []byte {
 	return crypto.Keccak256([]byte(
 		"Message(" +
 			"address signer," +
@@ -55,7 +55,7 @@ func MessageTypeHash() []byte {
 	))
 }
 
-func MessageEncode(message Message) []byte {
+func (message Message) Encode() []byte {
 	buf := []byte{}
 
 	data_len := make([]byte, 32)
@@ -78,20 +78,20 @@ func MessageEncode(message Message) []byte {
 	return buf
 }
 
-func MessageHash(message Message) []byte {
+func (message Message) DigestHash() []byte {
 	// https://ethereum.stackexchange.com/questions/113394/how-output-of-abi-encode-calculated
 	struct_hash := crypto.Keccak256(bytes.Join([][]byte{
-		MessageTypeHash(),
+		message.TypeHash(),
 		// Address of struct start in terms of current ctx (function parameters)
 		pad[0:31], {64},
-		MessageEncode(message),
+		message.Encode(),
 	}, []byte{}))
 
 	return crypto.Keccak256(bytes.Join([][]byte{[]byte("\x19\x01"), config.DomainSeparator, struct_hash}, []byte{}))
 }
 
-func SignMessage(message Message) ([]byte, error) {
-	hash := MessageHash(message)
+func (message Message) Sign() ([]byte, error) {
+	hash := message.DigestHash()
 
 	signature, err := crypto.Sign(hash, config.ValidatorPkey)
 	if err != nil {
