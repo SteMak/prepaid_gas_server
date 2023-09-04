@@ -12,10 +12,19 @@ type Address [20]byte
 // 	return []byte(strconv.Quote("0x" + hex.EncodeToString(value[:]))), nil
 // }
 
+func WrapAddress(value []byte) (Address, error) {
+	var target Address
+	if len(value) != 20 {
+		return target, errors.New("address: invalid bytes length")
+	}
+
+	return *(*[20]byte)(value), nil
+}
+
 func (target *Address) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
 
-	if hexstr[0:2] == "0x" {
+	if len(hexstr) >= 2 && hexstr[0:2] == "0x" {
 		hexstr = hexstr[2:]
 	}
 	if len(hexstr) != 40 {
@@ -26,10 +35,7 @@ func (target *Address) UnmarshalJSON(value []byte) error {
 	if err != nil {
 		return err
 	}
-	if len(decoded) != 20 {
-		return errors.New("address: invalid decode length")
-	}
 
-	*target = *(*[20]byte)(decoded)
-	return nil
+	*target, err = WrapAddress(decoded)
+	return err
 }

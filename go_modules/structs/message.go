@@ -13,7 +13,6 @@ import (
 
 var (
 	pad = [32]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-	err error
 )
 
 type Message struct {
@@ -24,7 +23,7 @@ type Message struct {
 	Deadline Uint256
 	Endpoint Address
 	Gas      Uint256
-	Data     []byte
+	Data     Bytes
 }
 
 func (message Message) ValidateEarlyLiquidation(execution_window int64) error {
@@ -40,7 +39,7 @@ func (message Message) ValidateEarlyLiquidation(execution_window int64) error {
 	return nil
 }
 
-func (_ Message) TypeHash() []byte {
+func (Message) TypeHash() []byte {
 	return crypto.Keccak256([]byte(
 		"Message(" +
 			"address signer," +
@@ -56,12 +55,10 @@ func (_ Message) TypeHash() []byte {
 }
 
 func (message Message) Encode() []byte {
-	buf := []byte{}
-
 	data_len := make([]byte, 32)
 	binary.BigEndian.PutUint64(data_len, uint64(len(message.Data)))
 
-	buf = bytes.Join([][]byte{buf,
+	return bytes.Join([][]byte{
 		pad[0:12], message.Signer[:],
 		message.Nonce[:],
 		message.GasOrder[:],
@@ -74,11 +71,9 @@ func (message Message) Encode() []byte {
 		data_len,
 		message.Data, pad[0 : (32-len(message.Data)%32)%32],
 	}, []byte{})
-
-	return buf
 }
 
-func (message Message) DigestHash() []byte {
+func (message Message) DigestHash() (Hash, error) {
 	// https://ethereum.stackexchange.com/questions/113394/how-output-of-abi-encode-calculated
 	struct_hash := crypto.Keccak256(bytes.Join([][]byte{
 		message.TypeHash(),
@@ -87,16 +82,23 @@ func (message Message) DigestHash() []byte {
 		message.Encode(),
 	}, []byte{}))
 
-	return crypto.Keccak256(bytes.Join([][]byte{[]byte("\x19\x01"), config.DomainSeparator, struct_hash}, []byte{}))
+	return WrapHash(crypto.Keccak256(bytes.Join([][]byte{
+		[]byte("\x19\x01"),
+		config.DomainSeparator,
+		struct_hash,
+	}, []byte{})))
 }
 
-func (message Message) Sign() ([]byte, error) {
-	hash := message.DigestHash()
-
-	signature, err := crypto.Sign(hash, config.ValidatorPkey)
+func (message Message) Sign() (Signature, error) {
+	hash, err := message.DigestHash()
 	if err != nil {
-		return nil, err
+		return Signature{}, err
 	}
 
-	return signature, nil
+	signature, err := crypto.Sign(hash[:], config.ValidatorPkey)
+	if err != nil {
+		return Signature{}, err
+	}
+
+	return WrapSignature(signature)
 }

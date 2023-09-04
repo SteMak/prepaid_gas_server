@@ -8,14 +8,19 @@ import (
 
 type Uint256 [32]byte
 
-// func (value Uint256) MarshalJSON() ([]byte, error) {
-// 	return []byte(strconv.Quote("0x" + hex.EncodeToString(value[:]))), nil
-// }
+func WrapUint256(value []byte) (Uint256, error) {
+	var target Uint256
+	if len(value) != 32 {
+		return target, errors.New("uint256: invalid bytes length")
+	}
+
+	return *(*[32]byte)(value), nil
+}
 
 func (target *Uint256) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
 
-	if hexstr[0:2] == "0x" {
+	if len(hexstr) >= 2 && hexstr[0:2] == "0x" {
 		hexstr = hexstr[2:]
 	}
 	if len(hexstr) > 64 {
@@ -29,12 +34,9 @@ func (target *Uint256) UnmarshalJSON(value []byte) error {
 	if err != nil {
 		return err
 	}
-	if len(decoded) != 32 {
-		return errors.New("uint256: invalid decode length")
-	}
 
-	*target = *(*[32]byte)(decoded)
-	return nil
+	*target, err = WrapUint256(decoded)
+	return err
 }
 
 func (value Uint256) IsUint32() error {

@@ -10,34 +10,36 @@ import (
 
 type Signature [65]byte
 
-// func (value Signature) MarshalJSON() ([]byte, error) {
-// 	return []byte(strconv.Quote("0x" + hex.EncodeToString(value[:]))), nil
-// }
+func WrapSignature(value []byte) (Signature, error) {
+	var target Signature
+	if len(value) != 65 {
+		return target, errors.New("signature: invalid bytes length")
+	}
+
+	return *(*[65]byte)(value), nil
+}
 
 func (target *Signature) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
 
-	if hexstr[0:2] == "0x" {
+	if len(hexstr) >= 2 && hexstr[0:2] == "0x" {
 		hexstr = hexstr[2:]
 	}
 	if len(hexstr) != 130 {
-		return errors.New("address: invalid length")
+		return errors.New("signature: invalid length")
 	}
 
 	decoded, err := hex.DecodeString(string(hexstr))
 	if err != nil {
 		return err
 	}
-	if len(decoded) != 65 {
-		return errors.New("address: invalid decode length")
-	}
 
-	*target = *(*[65]byte)(decoded)
-	return nil
+	*target, err = WrapSignature(decoded)
+	return err
 }
 
-func (sign Signature) Verify(digest []byte, address Address) error {
-	recovered_pubkey_bytes, err := crypto.Ecrecover(digest, sign[:])
+func (sign Signature) Verify(digest Hash, address Address) error {
+	recovered_pubkey_bytes, err := crypto.Ecrecover(digest[:], sign[:])
 	if err != nil {
 		return err
 	}

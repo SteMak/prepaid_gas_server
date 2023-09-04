@@ -38,7 +38,13 @@ func Validator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = request.Sign.Verify(request.Message.DigestHash(), request.Message.Signer)
+	digest, err := request.Message.DigestHash()
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+
+	err = request.Sign.Verify(digest, request.Message.Signer)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
@@ -50,11 +56,11 @@ func Validator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.InsertMessage(request.Message, request.Sign[:], valid)
+	err = db.Insert(request.Message, request.Sign, valid)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	io.WriteString(w, hex.EncodeToString(valid))
+	io.WriteString(w, hex.EncodeToString(valid[:]))
 }

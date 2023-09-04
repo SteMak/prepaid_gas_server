@@ -25,7 +25,7 @@ func Init() error {
 	return err
 }
 
-func InsertMessage(message structs.Message, sign []byte, valid []byte) error {
+func Insert(message structs.Message, sign structs.Signature, valid structs.Signature) error {
 	_, err = DB.Exec(`insert into messages
 		values(
 			decode($1, 'hex'),
@@ -47,8 +47,8 @@ func InsertMessage(message structs.Message, sign []byte, valid []byte) error {
 		hex.EncodeToString(bytes.TrimLeft(message.Endpoint[:], "\x00")),
 		hex.EncodeToString(bytes.TrimLeft(message.Gas[:], "\x00")),
 		hex.EncodeToString(message.Data[:]),
-		hex.EncodeToString(sign),
-		hex.EncodeToString(valid),
+		hex.EncodeToString(sign[:]),
+		hex.EncodeToString(valid[:]),
 	)
 
 	return err
