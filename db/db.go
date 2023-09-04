@@ -1,12 +1,15 @@
 package db
 
 import (
+	"bytes"
 	"database/sql"
+	"encoding/hex"
 	"fmt"
 
 	_ "github.com/lib/pq"
 
 	"github.com/SteMak/prepaid_gas_server/config"
+	"github.com/SteMak/prepaid_gas_server/structs"
 )
 
 var (
@@ -22,8 +25,29 @@ func Init() error {
 	return err
 }
 
-func InsertMessage() error {
-	// TODO: Finalize
-	_, err = DB.Exec("INSERT INTO messages(id) VALUES($1);", 7)
+func InsertMessage(message structs.Message, sign []byte) error {
+	_, err = DB.Exec(`insert into messages
+		values(
+			decode($1, 'hex'),
+			decode($2, 'hex'),
+			decode($3, 'hex'),
+			decode($4, 'hex'),
+			decode($5, 'hex'),
+			decode($6, 'hex'),
+			decode($7, 'hex'),
+			decode($8, 'hex'),
+			decode($9, 'hex')
+		);`,
+		hex.EncodeToString(message.Signer[:]),
+		hex.EncodeToString(bytes.TrimLeft(message.Nonce[:], "\x00")),
+		hex.EncodeToString(bytes.TrimLeft(message.GasOrder[:], "\x00")),
+		hex.EncodeToString(message.OnBehalf[:]),
+		hex.EncodeToString(bytes.TrimLeft(message.Deadline[:], "\x00")),
+		hex.EncodeToString(bytes.TrimLeft(message.Endpoint[:], "\x00")),
+		hex.EncodeToString(bytes.TrimLeft(message.Gas[:], "\x00")),
+		hex.EncodeToString(message.Data[:]),
+		hex.EncodeToString(sign),
+	)
+
 	return err
 }

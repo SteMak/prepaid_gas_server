@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/SteMak/prepaid_gas_server/config"
+	"github.com/SteMak/prepaid_gas_server/db"
 	"github.com/SteMak/prepaid_gas_server/structs"
 )
 
@@ -37,7 +38,13 @@ func Validator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sign, err := structs.SignMessage(message)
+	sign, err := message.Sign()
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+
+	err = db.InsertMessage(message, sign)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
