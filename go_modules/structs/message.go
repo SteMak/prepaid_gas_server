@@ -22,13 +22,13 @@ type Message struct {
 	Data     Bytes   `json:"data"`
 }
 
-func (message Message) ValidateEarlyLiquidation(execution_window int64) error {
+func (message Message) ValidateEarlyLiquidation(execution_window uint32) error {
 	deadline, err := message.Deadline.ToUint32()
 	if err != nil {
 		return err
 	}
 
-	if int64(deadline) <= time.Now().Unix()+execution_window {
+	if int64(deadline) <= time.Now().Unix()+int64(execution_window) {
 		return errors.New("message: early liquidation is possible")
 	}
 

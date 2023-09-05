@@ -12,7 +12,7 @@ import (
 
 var (
 	ValidatorPkey   *ecdsa.PrivateKey
-	ValidatorPort   int
+	ValidatorPort   uint64
 	DomainSeparator []byte
 
 	PostgresUser     string
@@ -36,7 +36,7 @@ func Init() error {
 		return errors.New("config: try sig failed: " + err.Error())
 	}
 
-	ValidatorPort, err = strconv.Atoi(os.Getenv("VALIDATOR_PORT"))
+	ValidatorPort, err = strconv.ParseUint(os.Getenv("VALIDATOR_PORT"), 10, 16)
 	if err != nil {
 		return errors.New("config: validator port load error")
 	}

@@ -20,11 +20,11 @@ func Init() error {
 	http.HandleFunc("/load", Load)
 	http.HandleFunc("/validate", Validate)
 
-	return http.ListenAndServe(":"+strconv.Itoa(config.ValidatorPort), nil)
+	return http.ListenAndServe(":"+strconv.FormatUint(config.ValidatorPort, 10), nil)
 }
 
 func Load(w http.ResponseWriter, r *http.Request) {
-	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	offset, err := strconv.ParseUint(r.URL.Query().Get("offset"), 10, 64)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
@@ -42,7 +42,7 @@ func Load(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := json.Marshal(structs.WrapResponses(messages))
+	data, err := json.Marshal(structs.WrapHTTPLoadResponses(messages))
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
@@ -78,17 +78,17 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valid, err := request.Message.Sign()
+	valid_sign, err := request.Message.Sign()
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	err = db.InsertMessage(request.Message, request.OrigSign, valid)
+	err = db.InsertMessage(structs.WrapDBMessage(request.Message, request.OrigSign, valid_sign))
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	io.WriteString(w, hex.EncodeToString(valid[:]))
+	io.WriteString(w, hex.EncodeToString(valid_sign[:]))
 }

@@ -20,13 +20,17 @@ var (
 )
 
 func Init() error {
-	connect := fmt.Sprintf("user=%s password=%s dbname=postgres sslmode=disable", config.PostgresUser, config.PostgresPassword)
+	connect := fmt.Sprintf(
+		"user=%s password=%s dbname=postgres sslmode=disable",
+		config.PostgresUser,
+		config.PostgresPassword,
+	)
 	DB, err = sqlx.Connect("postgres", connect)
 
 	return err
 }
 
-func GetMessages(reverse bool, offset int) ([]structs.DBMessage, error) {
+func GetMessages(reverse bool, offset uint64) ([]structs.DBMessage, error) {
 	messages := []structs.DBMessage{}
 
 	order := "asc"
@@ -34,13 +38,18 @@ func GetMessages(reverse bool, offset int) ([]structs.DBMessage, error) {
 		order = " desc"
 	}
 
-	script := fmt.Sprintf("select * from messages order by id %s limit 1000 offset %s", order, strconv.Itoa(offset))
+	script := fmt.Sprintf(
+		"select * from messages order by id %s limit 100 offset %s",
+		order,
+		strconv.FormatUint(offset, 10),
+	)
 	err := DB.Select(&messages, script)
 
 	return messages, err
 }
 
-func InsertMessage(message structs.Message, orig_sign structs.Signature, valid_sign structs.Signature) error {
+func InsertMessage(message structs.DBMessage) error {
+	// TODO: Try to simplify
 	_, err = DB.Exec(`insert into messages
 		values(
 			decode($1, 'hex'),
@@ -62,8 +71,8 @@ func InsertMessage(message structs.Message, orig_sign structs.Signature, valid_s
 		hex.EncodeToString(bytes.TrimLeft(message.Endpoint[:], "\x00")),
 		hex.EncodeToString(bytes.TrimLeft(message.Gas[:], "\x00")),
 		hex.EncodeToString(message.Data[:]),
-		hex.EncodeToString(orig_sign[:]),
-		hex.EncodeToString(valid_sign[:]),
+		hex.EncodeToString(message.OrigSign[:]),
+		hex.EncodeToString(message.ValidSign[:]),
 	)
 
 	return err

@@ -1,8 +1,8 @@
 package structs
 
 type HTTPValidateRequest struct {
-	Message  Message
-	OrigSign Signature
+	Message  Message   `json:"message"`
+	OrigSign Signature `json:"origSign"`
 }
 
 type HTTPLoadResponse struct {
@@ -12,7 +12,7 @@ type HTTPLoadResponse struct {
 	ValidSign Signature `json:"validSign"`
 }
 
-func WrapResponses(messages []DBMessage) []HTTPLoadResponse {
+func WrapHTTPLoadResponses(messages []DBMessage) []HTTPLoadResponse {
 	var responses []HTTPLoadResponse
 
 	for i := 0; i < len(messages); i++ {
