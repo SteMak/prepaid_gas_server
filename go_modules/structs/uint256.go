@@ -1,6 +1,7 @@
 package structs
 
 import (
+	"bytes"
 	"encoding/hex"
 	"errors"
 	"strconv"
@@ -15,6 +16,10 @@ func WrapUint256(value []byte) (Uint256, error) {
 	}
 
 	return *(*[32]byte)(value), nil
+}
+
+func (value Uint256) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Quote("0x" + hex.EncodeToString(bytes.TrimLeft(value[:], "\x00")))), nil
 }
 
 func (target *Uint256) UnmarshalJSON(value []byte) error {
@@ -36,6 +41,20 @@ func (target *Uint256) UnmarshalJSON(value []byte) error {
 	}
 
 	*target, err = WrapUint256(decoded)
+	return err
+}
+
+func (target *Uint256) Scan(value interface{}) error {
+	len := len(value.([]byte))
+	if len > 32 {
+		return errors.New("uint256: invalid length")
+	}
+
+	*target, err = WrapUint256(bytes.Join([][]byte{
+		pad[0 : 32-len],
+		value.([]byte),
+	}, []byte{}))
+
 	return err
 }
 

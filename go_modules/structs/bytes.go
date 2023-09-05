@@ -7,6 +7,10 @@ import (
 
 type Bytes []byte
 
+func (value Bytes) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Quote("0x" + hex.EncodeToString(value))), nil
+}
+
 func (target *Bytes) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
 

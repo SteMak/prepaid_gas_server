@@ -19,6 +19,10 @@ func WrapSignature(value []byte) (Signature, error) {
 	return *(*[65]byte)(value), nil
 }
 
+func (value Signature) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Quote("0x" + hex.EncodeToString(value[:]))), nil
+}
+
 func (target *Signature) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
 
@@ -35,6 +39,11 @@ func (target *Signature) UnmarshalJSON(value []byte) error {
 	}
 
 	*target, err = WrapSignature(decoded)
+	return err
+}
+
+func (target *Signature) Scan(value interface{}) error {
+	*target, err = WrapSignature(value.([]byte))
 	return err
 }
 

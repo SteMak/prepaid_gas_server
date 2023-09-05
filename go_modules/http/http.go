@@ -17,14 +17,42 @@ var (
 )
 
 func Init() error {
-	// TODO: Add view endpoints
-	http.HandleFunc("/", Validator)
+	http.HandleFunc("/load", Load)
+	http.HandleFunc("/validate", Validate)
 
 	return http.ListenAndServe(":"+strconv.Itoa(config.ValidatorPort), nil)
 }
 
-func Validator(w http.ResponseWriter, r *http.Request) {
-	var request structs.RequestInsert
+func Load(w http.ResponseWriter, r *http.Request) {
+	offset, err := strconv.Atoi(r.URL.Query().Get("offset"))
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+
+	reverse, err := strconv.ParseBool(r.URL.Query().Get("reverse"))
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+
+	messages, err := db.GetMessages(reverse, offset)
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+
+	data, err := json.Marshal(structs.WrapResponses(messages))
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+
+	io.WriteString(w, string(data))
+}
+
+func Validate(w http.ResponseWriter, r *http.Request) {
+	var request structs.HTTPValidateRequest
 
 	err = json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
@@ -44,7 +72,7 @@ func Validator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = request.Sign.Verify(digest, request.Message.Signer)
+	err = request.OrigSign.Verify(digest, request.Message.Signer)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
@@ -56,7 +84,7 @@ func Validator(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = db.Insert(request.Message, request.Sign, valid)
+	err = db.InsertMessage(request.Message, request.OrigSign, valid)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return

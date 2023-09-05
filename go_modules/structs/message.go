@@ -11,19 +11,15 @@ import (
 	"github.com/SteMak/prepaid_gas_server/go_modules/config"
 )
 
-var (
-	pad = [32]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
-)
-
 type Message struct {
-	Signer   Address
-	Nonce    Uint256
-	GasOrder Uint256
-	OnBehalf Address
-	Deadline Uint256
-	Endpoint Address
-	Gas      Uint256
-	Data     Bytes
+	Signer   Address `json:"signer"`
+	Nonce    Uint256 `json:"nonce"`
+	GasOrder Uint256 `json:"gasOrder"`
+	OnBehalf Address `json:"onBehalf"`
+	Deadline Uint256 `json:"deadline"`
+	Endpoint Address `json:"endpoint"`
+	Gas      Uint256 `json:"gas"`
+	Data     Bytes   `json:"data"`
 }
 
 func (message Message) ValidateEarlyLiquidation(execution_window int64) error {
@@ -95,10 +91,10 @@ func (message Message) Sign() (Signature, error) {
 		return Signature{}, err
 	}
 
-	signature, err := crypto.Sign(hash[:], config.ValidatorPkey)
+	valid_sign, err := crypto.Sign(hash[:], config.ValidatorPkey)
 	if err != nil {
 		return Signature{}, err
 	}
 
-	return WrapSignature(signature)
+	return WrapSignature(valid_sign)
 }

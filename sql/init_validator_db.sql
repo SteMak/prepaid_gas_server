@@ -14,7 +14,7 @@ create table messages (
   endpoint address not null,
   gas uint256 not null,
   data bytea not null,
-  sign signature not null,
-  valid signature not null unique,
+  orig_sign signature not null,
+  valid_sign signature not null unique,
   id serial primary key not null
 );

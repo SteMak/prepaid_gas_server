@@ -8,10 +8,6 @@ import (
 
 type Address [20]byte
 
-// func (value Address) MarshalJSON() ([]byte, error) {
-// 	return []byte(strconv.Quote("0x" + hex.EncodeToString(value[:]))), nil
-// }
-
 func WrapAddress(value []byte) (Address, error) {
 	var target Address
 	if len(value) != 20 {
@@ -19,6 +15,10 @@ func WrapAddress(value []byte) (Address, error) {
 	}
 
 	return *(*[20]byte)(value), nil
+}
+
+func (value Address) MarshalJSON() ([]byte, error) {
+	return []byte(strconv.Quote("0x" + hex.EncodeToString(value[:]))), nil
 }
 
 func (target *Address) UnmarshalJSON(value []byte) error {
@@ -37,5 +37,10 @@ func (target *Address) UnmarshalJSON(value []byte) error {
 	}
 
 	*target, err = WrapAddress(decoded)
+	return err
+}
+
+func (target *Address) Scan(value interface{}) error {
+	*target, err = WrapAddress(value.([]byte))
 	return err
 }
