@@ -72,7 +72,7 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = request.OrigSign.Verify(digest, request.Message.From)
+	err = digest.Verify(request.OrigSign, request.Message.From)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return

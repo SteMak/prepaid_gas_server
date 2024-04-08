@@ -27,3 +27,29 @@ func (digest Hash) Sign() (Signature, error) {
 
 	return WrapSignature(valid_sign)
 }
+
+func (digest Hash) Verify(sign Signature, signer Address) error {
+	recovered_pubkey_bytes, err := crypto.Ecrecover(digest[:], sign[:])
+	if err != nil {
+		return err
+	}
+
+	recovered_pubkey, err := crypto.UnmarshalPubkey(recovered_pubkey_bytes)
+	if err != nil {
+		return err
+	}
+
+	recovered := crypto.PubkeyToAddress(*recovered_pubkey)
+
+	if len(recovered) != len(signer) {
+		return errors.New("signature: recovered length mismatch")
+	}
+
+	for i := 0; i < len(signer); i++ {
+		if signer[i] != recovered[i] {
+			return errors.New("signature: recovered mismatch")
+		}
+	}
+
+	return nil
+}

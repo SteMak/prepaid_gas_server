@@ -49,7 +49,6 @@ func GetMessages(reverse bool, offset uint64) ([]structs.DBMessage, error) {
 }
 
 func InsertMessage(message structs.DBMessage) error {
-	// TODO: Try to simplify
 	_, err = DB.Exec(`insert into messages
 		values(
 			decode($1, 'hex'),
