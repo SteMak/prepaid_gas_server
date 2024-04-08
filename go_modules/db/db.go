@@ -35,7 +35,7 @@ func GetMessages(reverse bool, offset uint64) ([]structs.DBMessage, error) {
 
 	order := "asc"
 	if reverse {
-		order = " desc"
+		order = "desc"
 	}
 
 	script := fmt.Sprintf(
@@ -60,15 +60,13 @@ func InsertMessage(message structs.DBMessage) error {
 			decode($6, 'hex'),
 			decode($7, 'hex'),
 			decode($8, 'hex'),
-			decode($9, 'hex'),
-			decode($10, 'hex')
+			decode($9, 'hex')
 		);`,
-		hex.EncodeToString(message.Signer[:]),
+		hex.EncodeToString(message.From[:]),
 		hex.EncodeToString(bytes.TrimLeft(message.Nonce[:], "\x00")),
-		hex.EncodeToString(bytes.TrimLeft(message.GasOrder[:], "\x00")),
-		hex.EncodeToString(message.OnBehalf[:]),
-		hex.EncodeToString(bytes.TrimLeft(message.Deadline[:], "\x00")),
-		hex.EncodeToString(bytes.TrimLeft(message.Endpoint[:], "\x00")),
+		hex.EncodeToString(bytes.TrimLeft(message.Order[:], "\x00")),
+		hex.EncodeToString(bytes.TrimLeft(message.Start[:], "\x00")),
+		hex.EncodeToString(bytes.TrimLeft(message.To[:], "\x00")),
 		hex.EncodeToString(bytes.TrimLeft(message.Gas[:], "\x00")),
 		hex.EncodeToString(message.Data[:]),
 		hex.EncodeToString(message.OrigSign[:]),
