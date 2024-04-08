@@ -1,4 +1,4 @@
-module github.com/SteMak/prepaid_gas_server
+module github.com/prepaidGas/prepaid-gas-server
 
 go 1.22
 

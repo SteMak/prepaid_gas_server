@@ -8,7 +8,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/SteMak/prepaid_gas_server/go_modules/config"
+	"github.com/prepaidGas/prepaid-gas-server/go_modules/config"
 )
 
 type Message struct {

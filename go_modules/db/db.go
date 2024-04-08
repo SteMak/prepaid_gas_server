@@ -9,8 +9,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
-	"github.com/SteMak/prepaid_gas_server/go_modules/config"
-	"github.com/SteMak/prepaid_gas_server/go_modules/structs"
+	"github.com/prepaidGas/prepaid-gas-server/go_modules/config"
+	"github.com/prepaidGas/prepaid-gas-server/go_modules/structs"
 )
 
 var (
