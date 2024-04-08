@@ -66,7 +66,7 @@ func InsertMessage(message structs.DBMessage) error {
 		hex.EncodeToString(bytes.TrimLeft(message.Nonce[:], "\x00")),
 		hex.EncodeToString(bytes.TrimLeft(message.Order[:], "\x00")),
 		hex.EncodeToString(bytes.TrimLeft(message.Start[:], "\x00")),
-		hex.EncodeToString(bytes.TrimLeft(message.To[:], "\x00")),
+		hex.EncodeToString(message.To[:]),
 		hex.EncodeToString(bytes.TrimLeft(message.Gas[:], "\x00")),
 		hex.EncodeToString(message.Data[:]),
 		hex.EncodeToString(message.OrigSign[:]),

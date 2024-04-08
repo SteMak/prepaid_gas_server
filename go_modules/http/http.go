@@ -60,14 +60,12 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: Rename to ValidateOffchain
-	err = request.Message.ValidateEarlyLiquidation(20)
+	err = request.Message.ValidateOffchain()
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	// TODO: Move DigestHash to Verify or utilize in Sign
 	digest, err := request.Message.DigestHash()
 	if err != nil {
 		io.WriteString(w, err.Error())
@@ -80,7 +78,7 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	valid_sign, err := request.Message.Sign()
+	valid_sign, err := digest.Sign()
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return

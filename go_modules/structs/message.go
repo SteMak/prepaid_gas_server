@@ -21,14 +21,14 @@ type Message struct {
 	Data  Bytes   `json:"data"`
 }
 
-func (message Message) ValidateEarlyLiquidation(execution_window uint32) error {
+func (message Message) ValidateOffchain() error {
 	start, err := message.Start.ToUint32()
 	if err != nil {
 		return err
 	}
 
-	if int64(start) <= time.Now().Unix()+int64(execution_window) {
-		return errors.New("message: early liquidation is possible")
+	if int64(start) <= time.Now().Unix()+int64(config.MinStartDelay) {
+		return errors.New("message: message provided lately")
 	}
 
 	return nil
@@ -74,18 +74,4 @@ func (message Message) DigestHash() (Hash, error) {
 		config.DomainSeparator,
 		struct_hash,
 	}, []byte{})))
-}
-
-func (message Message) Sign() (Signature, error) {
-	hash, err := message.DigestHash()
-	if err != nil {
-		return Signature{}, err
-	}
-
-	valid_sign, err := crypto.Sign(hash[:], config.ValidatorPkey)
-	if err != nil {
-		return Signature{}, err
-	}
-
-	return WrapSignature(valid_sign)
 }

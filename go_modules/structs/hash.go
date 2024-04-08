@@ -1,6 +1,11 @@
 package structs
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/SteMak/prepaid_gas_server/go_modules/config"
+	"github.com/ethereum/go-ethereum/crypto"
+)
 
 type Hash [32]byte
 
@@ -11,4 +16,13 @@ func WrapHash(value []byte) (Hash, error) {
 	}
 
 	return *(*[32]byte)(value), nil
+}
+
+func (digest Hash) Sign() (Signature, error) {
+	valid_sign, err := crypto.Sign(digest[:], config.ValidatorPkey)
+	if err != nil {
+		return Signature{}, err
+	}
+
+	return WrapSignature(valid_sign)
 }

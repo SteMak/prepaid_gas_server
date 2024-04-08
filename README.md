@@ -2,9 +2,9 @@
 
 How to interact with validator?
 
-`curl -d '{"origSign":"784e44edf1884edc8f73d355512642d25e0569ab7f67f5f65a8df433c1053ce140855a7f966b82e2cfdef9f8ca41b6538254dc844eb4aa6d4eaed9b5a9503b4501","message":{"from":"0x3428B2b8384d024881445cc7fd6423065849CEA8","nonce":"0x123","order":"0x12","start":"0xffeeffee","to":"0x71C7656EC7ab88b098defB751B7401B5f6d8976F","gas":"0x13","data":"0f0000000000000000000000000000000000000000000000000000000000000000001113150d"}}' -X POST http://localhost:8001/validate`
+`curl -d '{"origSign":"0x6cec8506276e7b6edd424941174a2c8fa6a53ed26adb5b668a600de9540e3c106559f5c7a6d0dd1bfe11b4550b7a5a047f83d84a894de0bc0faa38159fe043571c","message":{"from":"0x70997970C51812dc3A010C7d01b50e0d17dc79C8","nonce":"0x00","order":"0x00","start":"0xffeeffee","to":"0x0000000000000000000000000000000000000000","gas":"0x00","data":"0x"}}' -X POST http://localhost:8001/validate`
 
-`curl http://localhost:8001/load?offset=0&reverse=true`
+`curl 'http://localhost:8001/load?offset=0&reverse=false'`
 
 How to run psql?
 

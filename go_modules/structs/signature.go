@@ -15,6 +15,9 @@ func WrapSignature(value []byte) (Signature, error) {
 	if len(value) != 65 {
 		return target, errors.New("signature: invalid bytes length")
 	}
+	if value[64] == 27 || value[64] == 28 {
+		value[64] -= 27
+	}
 
 	return *(*[65]byte)(value), nil
 }

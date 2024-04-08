@@ -18,6 +18,8 @@ var (
 	PostgresUser     string
 	PostgresPassword string
 
+	MinStartDelay uint64
+
 	err error
 )
 
@@ -43,6 +45,11 @@ func Init() error {
 
 	PostgresUser = os.Getenv("POSTGRES_USER")
 	PostgresPassword = os.Getenv("POSTGRES_PASSWORD")
+
+	MinStartDelay, err = strconv.ParseUint(os.Getenv("MIN_START_DELAY"), 10, 32)
+	if err != nil {
+		return errors.New("config: min start delay load error")
+	}
 
 	return nil
 }

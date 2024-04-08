@@ -1,11 +1,11 @@
 package structs
 
 type DBMessage struct {
-	From      Address   `db:"from"`
+	From      Address   `db:"from_"`
 	Nonce     Uint256   `db:"nonce"`
-	Order     Uint256   `db:"order"`
+	Order     Uint256   `db:"order_"`
 	Start     Uint256   `db:"start"`
-	To        Address   `db:"to"`
+	To        Address   `db:"to_"`
 	Gas       Uint256   `db:"gas"`
 	Data      Bytes     `db:"data"`
 	OrigSign  Signature `db:"orig_sign"`
