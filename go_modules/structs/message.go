@@ -31,6 +31,17 @@ func (message Message) ValidateOffchain() error {
 		return errors.New("message: message provided lately")
 	}
 
+	empty := true
+	for i := 0; i < len(message.From); i++ {
+		if message.From[i] != 0 {
+			empty = false
+			break
+		}
+	}
+	if empty {
+		return errors.New("message: message from is empty")
+	}
+
 	return nil
 }
 
