@@ -55,7 +55,8 @@ func (message Message) ValidateOnchain() error {
 	start := big.NewInt(0).SetBytes(message.Start[:])
 	gas := big.NewInt(0).SetBytes(message.Gas[:])
 
-	result, err := onchain.PGas.MessageValidate(nil, pgas.Message{
+	// Error handling omitted to not stuck due to node errors
+	result, _ := onchain.PGas.MessageValidate(nil, pgas.Message{
 		From:  common.Address(message.From),
 		Nonce: nonce,
 		Order: order,
@@ -78,7 +79,7 @@ func (message Message) ValidateOnchain() error {
 		return errors.New("onchain: not in order timeline")
 	}
 
-	return err
+	return nil
 }
 
 func (Message) TypeHash() []byte {
