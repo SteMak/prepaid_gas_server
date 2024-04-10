@@ -24,6 +24,9 @@ func (value Uint256) MarshalJSON() ([]byte, error) {
 
 func (target *Uint256) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
+	if err != nil {
+		return err
+	}
 
 	if len(hexstr) >= 2 && hexstr[0:2] == "0x" {
 		hexstr = hexstr[2:]

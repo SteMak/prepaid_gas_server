@@ -23,6 +23,9 @@ func (value Address) MarshalJSON() ([]byte, error) {
 
 func (target *Address) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
+	if err != nil {
+		return err
+	}
 
 	if len(hexstr) >= 2 && hexstr[0:2] == "0x" {
 		hexstr = hexstr[2:]
