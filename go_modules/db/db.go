@@ -11,8 +11,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/config"
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/structs"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/config"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/structs"
 )
 
 var (

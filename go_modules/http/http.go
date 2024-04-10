@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/config"
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/db"
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/structs"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/config"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/db"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/structs"
 )
 
 var (

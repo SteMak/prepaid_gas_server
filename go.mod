@@ -1,4 +1,4 @@
-module github.com/prepaidGas/prepaid-gas-server
+module github.com/prepaidGas/prepaidgas-server
 
 go 1.22
 

@@ -10,9 +10,9 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/config"
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/onchain"
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/onchain/pgas"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/config"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain/pgas"
 )
 
 type Message struct {

@@ -5,10 +5,10 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/config"
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/db"
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/http"
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/onchain"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/config"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/db"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/http"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain"
 )
 
 var (

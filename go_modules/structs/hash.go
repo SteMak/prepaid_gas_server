@@ -5,7 +5,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/prepaidGas/prepaid-gas-server/go_modules/config"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/config"
 )
 
 type Hash [32]byte
