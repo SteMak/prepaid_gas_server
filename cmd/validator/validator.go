@@ -35,6 +35,12 @@ func main() {
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+	defer db.DB.Close()
+
+	err = db.InitMessages()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
 
 	err = http.Init()
 	if err != nil {

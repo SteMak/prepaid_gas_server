@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/jmoiron/sqlx"
@@ -26,6 +28,17 @@ func Init() error {
 		config.PostgresPassword,
 	)
 	DB, err = sqlx.Connect("postgres", connect)
+
+	return err
+}
+
+func InitMessages() error {
+	sql, err := os.ReadFile(filepath.Join("sql", "messages.up.sql"))
+	if err != nil {
+		return err
+	}
+
+	_, err = DB.Exec(string(sql))
 
 	return err
 }
