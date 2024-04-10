@@ -4,11 +4,15 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
+	"math/big"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 
 	"github.com/prepaidGas/prepaid-gas-server/go_modules/config"
+	"github.com/prepaidGas/prepaid-gas-server/go_modules/onchain"
+	"github.com/prepaidGas/prepaid-gas-server/go_modules/onchain/pgas"
 )
 
 type Message struct {
@@ -43,6 +47,38 @@ func (message Message) ValidateOffchain() error {
 	}
 
 	return nil
+}
+
+func (message Message) ValidateOnchain() error {
+	nonce := big.NewInt(0).SetBytes(message.Nonce[:])
+	order := big.NewInt(0).SetBytes(message.Order[:])
+	start := big.NewInt(0).SetBytes(message.Start[:])
+	gas := big.NewInt(0).SetBytes(message.Gas[:])
+
+	result, err := onchain.PGas.MessageValidate(nil, pgas.Message{
+		From:  common.Address(message.From),
+		Nonce: nonce,
+		Order: order,
+		Start: start,
+		To:    common.Address(message.To),
+		Gas:   gas,
+		Data:  (message.Data),
+	})
+
+	switch onchain.Validation(result) {
+	case onchain.StartInFuture:
+		return errors.New("onchain: start not in future")
+	case onchain.NonceExhaustion:
+		return errors.New("onchain: nonce already used")
+	case onchain.BalanceCompliance:
+		return errors.New("onchain: low order balance")
+	case onchain.OwnerCompliance:
+		return errors.New("onchain: incompliant order owner")
+	case onchain.TimelineCompliance:
+		return errors.New("onchain: not in order timeline")
+	}
+
+	return err
 }
 
 func (Message) TypeHash() []byte {

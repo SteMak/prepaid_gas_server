@@ -18,6 +18,9 @@ var (
 	PostgresUser     string
 	PostgresPassword string
 
+	ProviderURL string
+	PGasAddress string
+
 	MinStartDelay uint64
 
 	err error
@@ -45,6 +48,9 @@ func Init() error {
 
 	PostgresUser = os.Getenv("POSTGRES_USER")
 	PostgresPassword = os.Getenv("POSTGRES_PASSWORD")
+
+	ProviderURL = os.Getenv("PROVIDER_URL")
+	PGasAddress = os.Getenv("PGAS_ADDRESS")
 
 	MinStartDelay, err = strconv.ParseUint(os.Getenv("MIN_START_DELAY"), 10, 32)
 	if err != nil {

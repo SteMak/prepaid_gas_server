@@ -78,6 +78,12 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = request.Message.ValidateOnchain()
+	if err != nil {
+		io.WriteString(w, err.Error())
+		return
+	}
+
 	valid_sign, err := digest.Sign()
 	if err != nil {
 		io.WriteString(w, err.Error())

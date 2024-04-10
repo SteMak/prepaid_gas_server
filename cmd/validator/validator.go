@@ -8,6 +8,7 @@ import (
 	"github.com/prepaidGas/prepaid-gas-server/go_modules/config"
 	"github.com/prepaidGas/prepaid-gas-server/go_modules/db"
 	"github.com/prepaidGas/prepaid-gas-server/go_modules/http"
+	"github.com/prepaidGas/prepaid-gas-server/go_modules/onchain"
 )
 
 var (
@@ -21,6 +22,11 @@ func main() {
 	}
 
 	err = config.Init()
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+
+	err = onchain.Init()
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
