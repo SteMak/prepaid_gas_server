@@ -11,7 +11,6 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 
-	"github.com/prepaidGas/prepaidgas-server/go_modules/config"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/structs"
 )
 
@@ -21,11 +20,10 @@ var (
 	err error
 )
 
-func Init() error {
+func Init(user, password string) error {
 	connect := fmt.Sprintf(
 		"user=%s password=%s dbname=postgres sslmode=disable",
-		config.PostgresUser,
-		config.PostgresPassword,
+		user, password,
 	)
 	DB, err = sqlx.Connect("postgres", connect)
 

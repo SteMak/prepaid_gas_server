@@ -1,11 +1,10 @@
 package structs
 
 import (
+	"crypto/ecdsa"
 	"errors"
 
 	"github.com/ethereum/go-ethereum/crypto"
-
-	"github.com/prepaidGas/prepaidgas-server/go_modules/config"
 )
 
 type Hash [32]byte
@@ -19,8 +18,13 @@ func WrapHash(value []byte) (Hash, error) {
 	return *(*[32]byte)(value), nil
 }
 
-func (digest Hash) Sign() (Signature, error) {
-	valid_sign, err := crypto.Sign(digest[:], config.ValidatorPkey)
+func (target *Hash) Scan(value interface{}) error {
+	*target, err = WrapHash(value.([]byte))
+	return err
+}
+
+func (digest Hash) Sign(pkey *ecdsa.PrivateKey) (Signature, error) {
+	valid_sign, err := crypto.Sign(digest[:], pkey)
 	if err != nil {
 		return Signature{}, err
 	}

@@ -47,3 +47,11 @@ func (target *Address) Scan(value interface{}) error {
 	*target, err = WrapAddress(value.([]byte))
 	return err
 }
+
+func (address Address) NotZero() error {
+	if address == (Address{}) {
+		return errors.New("address: unexpected zero address")
+	}
+
+	return nil
+}

@@ -10,17 +10,18 @@ import (
 	"github.com/prepaidGas/prepaidgas-server/go_modules/config"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/db"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/structs"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/utils"
 )
 
 var (
 	err error
 )
 
-func Init() error {
+func Init(port uint64) error {
 	http.HandleFunc("/load", Load)
 	http.HandleFunc("/validate", Validate)
 
-	return http.ListenAndServe(":"+strconv.FormatUint(config.ValidatorPort, 10), nil)
+	return http.ListenAndServe(":"+strconv.FormatUint(port, 10), nil)
 }
 
 func Load(w http.ResponseWriter, r *http.Request) {
@@ -60,13 +61,13 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = request.Message.ValidateOffchain()
+	err = utils.ValidateOffchain(request.Message, config.MinStartDelay)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	digest, err := request.Message.DigestHash()
+	digest, err := request.Message.DigestHash(config.DomainSeparator)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
@@ -78,13 +79,13 @@ func Validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = request.Message.ValidateOnchain()
+	err = utils.ValidateOnchain(request.Message)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return
 	}
 
-	valid_sign, err := digest.Sign()
+	valid_sign, err := digest.Sign(config.ValidatorPkey)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return

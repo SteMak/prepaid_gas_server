@@ -2,6 +2,41 @@
 
 pragma solidity 0.8.25;
 
+struct GasPayment {
+  address token;
+  uint256 perUnit;
+}
+
+struct Order {
+  address manager;
+  uint256 gas;
+  uint256 expire;
+  uint256 start;
+  uint256 end;
+  uint256 txWindow;
+  uint256 redeemWindow;
+  GasPayment gasPrice;
+  GasPayment gasGuarantee;
+}
+
+struct FilteredOrder {
+  uint256 id;
+  Order order;
+  OrderStatus status;
+  uint256 gasLeft;
+  address executor;
+}
+
+enum OrderStatus {
+  None,
+  Pending,
+  Accepted,
+  Active,
+  Inactive,
+  Untaken,
+  Closed
+}
+
 struct Message {
   address from;
   uint256 nonce;
@@ -26,5 +61,16 @@ enum Validation {
 // rm -rf build
 
 contract PGas {
+  function domainSeparator() external view returns (bytes32) {}
+
   function messageValidate(Message calldata message) external view returns (Validation) {}
+
+  function getExecutorOrders(
+    address promisor,
+    bool onlyLive,
+    uint256 limit,
+    uint256 offset
+  ) external view returns (FilteredOrder[] memory) {}
+
+  function execute(Message calldata message, bytes calldata signature) external {}
 }

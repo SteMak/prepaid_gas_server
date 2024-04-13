@@ -26,12 +26,12 @@ func main() {
 		log.Fatalln(err.Error())
 	}
 
-	err = onchain.Init()
+	err = onchain.Init(*config.ProviderURL, config.PGasAddress, config.DomainSeparator)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	err = db.Init()
+	err = db.Init(config.PostgresUser, config.PostgresPassword)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
@@ -42,7 +42,7 @@ func main() {
 		log.Fatalln(err.Error())
 	}
 
-	err = http.Init()
+	err = http.Init(config.ValidatorPort)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

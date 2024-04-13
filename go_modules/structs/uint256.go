@@ -61,9 +61,9 @@ func (target *Uint256) Scan(value interface{}) error {
 	return err
 }
 
-func (value Uint256) IsUint32() error {
+func (uint256 Uint256) IsUint32() error {
 	for i := 0; i < 28; i++ {
-		if value[i] != 0 {
+		if uint256[i] != 0 {
 			return errors.New("uint256: exceed uint32")
 		}
 	}
@@ -71,11 +71,11 @@ func (value Uint256) IsUint32() error {
 	return nil
 }
 
-func (value Uint256) ToUint32() (uint32, error) {
-	err = value.IsUint32()
+func (uint256 Uint256) ToUint32() (uint32, error) {
+	err = uint256.IsUint32()
 	if err != nil {
 		return 0, err
 	}
 
-	return uint32(value[31]) + uint32(value[30])*256 + uint32(value[29])*65536 + uint32(value[28])*16777216, nil
+	return uint32(uint256[31]) + uint32(uint256[30])*256 + uint32(uint256[29])*65536 + uint32(uint256[28])*16777216, nil
 }
