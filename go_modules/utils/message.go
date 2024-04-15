@@ -2,42 +2,29 @@ package utils
 
 import (
 	"errors"
-	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
-
 	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain"
-	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain/pgas"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/structs"
 )
 
 func ValidateOffchain(message structs.Message, min_delay uint64) error {
-	start, err := message.Start.ToUint32()
-	if err != nil {
+	if start, err := message.Start.ToUint32(); err != nil {
 		return err
-	}
-
-	if int64(start) <= time.Now().Unix()+int64(min_delay) {
+	} else if int64(start) <= time.Now().Unix()+int64(min_delay) {
 		return errors.New("message: message provided lately")
 	}
 
-	err = message.From.NotZero()
+	if err = message.From.NotZero(); err != nil {
+		return err
+	}
 
-	return err
+	return nil
 }
 
 func ValidateOnchain(message structs.Message) error {
 	// Error handling omitted to not stuck due to node errors
-	result, _ := onchain.PGas.MessageValidate(nil, pgas.Message{
-		From:  common.Address(message.From),
-		Nonce: big.NewInt(0).SetBytes(message.Nonce[:]),
-		Order: big.NewInt(0).SetBytes(message.Order[:]),
-		Start: big.NewInt(0).SetBytes(message.Start[:]),
-		To:    common.Address(message.To),
-		Gas:   big.NewInt(0).SetBytes(message.Gas[:]),
-		Data:  message.Data,
-	})
+	result, _ := onchain.PGas.MessageValidate(nil, onchain.WrapPGasMessage(message))
 
 	switch onchain.Validation(result) {
 	case onchain.StartInFuture:

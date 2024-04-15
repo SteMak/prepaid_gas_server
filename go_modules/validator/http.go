@@ -1,8 +1,9 @@
-package http
+package validator
 
 import (
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -21,7 +22,11 @@ func Init(port uint64) error {
 	http.HandleFunc("/load", Load)
 	http.HandleFunc("/validate", Validate)
 
-	return http.ListenAndServe(":"+strconv.FormatUint(port, 10), nil)
+	if err = http.ListenAndServe(":"+strconv.FormatUint(port, 10), nil); err != nil {
+		return errors.New("http: listen start error: " + err.Error())
+	}
+
+	return nil
 }
 
 func Load(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +42,7 @@ func Load(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	messages, err := db.GetMessages(reverse, offset)
+	messages, err := db.GetMessages(reverse, offset, 100)
 	if err != nil {
 		io.WriteString(w, err.Error())
 		return

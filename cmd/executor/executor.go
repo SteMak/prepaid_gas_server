@@ -5,8 +5,8 @@ import (
 
 	"github.com/prepaidGas/prepaidgas-server/go_modules/config"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/db"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/executor"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain"
-	"github.com/prepaidGas/prepaidgas-server/go_modules/validator"
 )
 
 var (
@@ -14,23 +14,25 @@ var (
 )
 
 func main() {
-	err = config.InitValidator()
+	err = config.InitExecutor()
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	err = onchain.InitValidator(config.ProviderHTTP, config.PGasAddress, config.DomainSeparator)
+	err = onchain.InitExecutor(
+		config.ProviderHTTP, config.ProviderWS, config.PGasAddress, config.ExecutorPkey, config.ChainID,
+	)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	err = db.InitValidator(config.PostgresUser, config.PostgresPassword)
+	err = db.InitExecutor(config.PostgresUser, config.PostgresPassword)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	defer db.DB.Close()
 
-	err = validator.Init(config.ValidatorPort)
+	err = executor.Init()
 	if err != nil {
 		log.Fatalln(err.Error())
 	}

@@ -26,3 +26,15 @@ func WrapDBMessage(message Message, orig_sign Signature, valid_sign Signature) D
 		ValidSign: valid_sign,
 	}
 }
+
+func UnwrapDBMessage(message DBMessage) (Message, Signature, Signature) {
+	return (Message{
+		From:  message.From,
+		Nonce: message.Nonce,
+		Order: message.Order,
+		Start: message.Start,
+		To:    message.To,
+		Gas:   message.Gas,
+		Data:  message.Data,
+	}), message.OrigSign, message.ValidSign
+}

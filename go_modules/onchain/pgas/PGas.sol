@@ -63,6 +63,8 @@ enum Validation {
 contract PGas {
   function domainSeparator() external view returns (bytes32) {}
 
+  function nonce(address, uint256) external view returns (bool) {}
+
   function messageValidate(Message calldata message) external view returns (Validation) {}
 
   function getExecutorOrders(
