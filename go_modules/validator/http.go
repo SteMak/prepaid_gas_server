@@ -58,6 +58,8 @@ func Load(w http.ResponseWriter, r *http.Request) {
 }
 
 func Validate(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+
 	var request structs.HTTPValidateRequest
 
 	err = json.NewDecoder(r.Body).Decode(&request)

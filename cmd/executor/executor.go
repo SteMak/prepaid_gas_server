@@ -20,7 +20,7 @@ func main() {
 	}
 
 	err = onchain.InitExecutor(
-		config.ProviderHTTP, config.ProviderWS, config.PGasAddress, config.ExecutorPkey, config.ChainID,
+		config.ProviderHTTP, config.ProviderWS, config.PGasAddress, config.TreasuryAddress, config.ExecutorPkey, config.ChainID,
 	)
 	if err != nil {
 		log.Fatalln(err.Error())

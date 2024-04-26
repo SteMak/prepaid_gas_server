@@ -48,7 +48,13 @@ func Acceptor(pgas_address structs.Address) error {
 					PerUnit: big.NewInt(0).SetBytes(event.Data[320:352]),
 				},
 			}
-			PlanOrder(big.NewInt(0).SetBytes(event.Topics[1][:]), order)
+
+			id, err := structs.WrapUint256(event.Topics[1][:])
+			if err != nil {
+				continue
+			}
+
+			PlanOrder(id, order)
 		}
 	}
 }

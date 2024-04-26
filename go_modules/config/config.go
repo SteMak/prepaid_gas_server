@@ -25,6 +25,7 @@ var (
 
 	DomainSeparator structs.Hash
 	PGasAddress     structs.Address
+	TreasuryAddress structs.Address
 
 	ValidatorPort uint64
 	ValidatorPkey *ecdsa.PrivateKey
@@ -98,6 +99,12 @@ func InitExecutor() error {
 		return errors.New("config: pgas address load error: " + err.Error())
 	} else if err = PGasAddress.Scan(address); err != nil {
 		return errors.New("config: pgas address load error: " + err.Error())
+	}
+
+	if address, err := hex.DecodeString(os.Getenv("TREASURY_ADDRESS")); err != nil {
+		return errors.New("config: treasury address load error: " + err.Error())
+	} else if err = TreasuryAddress.Scan(address); err != nil {
+		return errors.New("config: treasury address load error: " + err.Error())
 	}
 
 	if ProviderWS, err = url.Parse(os.Getenv("PROVIDER_WS")); err != nil {

@@ -42,6 +42,7 @@ var (
 	ClientHTTP *ethclient.Client
 
 	PGas       *pgas.PGas
+	Treasury   *pgas.PGas
 	Transactor *bind.TransactOpts
 
 	err error
@@ -69,9 +70,20 @@ func InitValidator(provider *url.URL, pgas_address structs.Address, expected_sep
 	return nil
 }
 
-func InitExecutor(provider_http *url.URL, provider_ws *url.URL, pgas_address structs.Address, pkey *ecdsa.PrivateKey, chain_id uint64) error {
+func InitExecutor(
+	provider_http *url.URL,
+	provider_ws *url.URL,
+	pgas_address structs.Address,
+	treasury structs.Address,
+	pkey *ecdsa.PrivateKey,
+	chain_id uint64,
+) error {
 	if err = Init(provider_http, pgas_address); err != nil {
 		return err
+	}
+
+	if Treasury, err = pgas.NewPGas(common.BytesToAddress(treasury[:]), ClientHTTP); err != nil {
+		return errors.New("onchain: treasury instance error: " + err.Error())
 	}
 
 	if ClientWS, err = ethclient.Dial(provider_ws.String()); err != nil {

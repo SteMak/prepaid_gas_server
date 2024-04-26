@@ -86,12 +86,12 @@ func GetMessages(reverse bool, offset uint64, limit uint64) ([]structs.DBMessage
 	return messages, err
 }
 
-func GetMessagesByOrder(order uint64, offset uint64, limit uint64) ([]structs.DBMessage, error) {
+func GetMessagesByOrder(order structs.Uint256, offset uint64, limit uint64) ([]structs.DBMessage, error) {
 	messages := []structs.DBMessage{}
 
 	script := fmt.Sprintf(
-		"select * from messages where order_ = %s order by id limit %s offset %s",
-		strconv.FormatUint(order, 10),
+		"select * from messages where order_ = decode('%s', 'hex') order by id limit %s offset %s",
+		hex.EncodeToString(order[:]),
 		strconv.FormatUint(limit, 10),
 		strconv.FormatUint(offset, 10),
 	)

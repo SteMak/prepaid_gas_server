@@ -111,14 +111,14 @@ func RunMessage(message structs.Message, sign structs.Signature) error {
 	return err
 }
 
-func PlanOrder(id *big.Int, order pgas.Order) {
-	if orders[id] != nil {
+func PlanOrder(id structs.Uint256, order pgas.Order) {
+	if orders[id.ToBig()] != nil {
 		return
 	}
 
-	orders[id] = &order
+	orders[id.ToBig()] = &order
 
-	messages, err := db.GetMessagesByOrder(id.Uint64(), 0, 1)
+	messages, err := db.GetMessagesByOrder(id, 0, 1)
 	if err != nil || uint64(len(messages)) > 0 {
 		return
 	}
@@ -127,10 +127,18 @@ func PlanOrder(id *big.Int, order pgas.Order) {
 		return
 	}
 
-	_, err = onchain.PGas.OrderAccept(onchain.Transactor, id)
+	_, err = onchain.Treasury.OrderAccept(onchain.Transactor, id.ToBig())
 	if err != nil {
-		orders[id] = nil
-		return
+		// TODO: Make optional for local node
+		transactor := onchain.Transactor
+		transactor.GasFeeCap = big.NewInt(1000)
+		transactor.GasTipCap = big.NewInt(1000)
+
+		_, err = onchain.Treasury.OrderAccept(transactor, id.ToBig())
+		if err != nil {
+			orders[id.ToBig()] = nil
+			return
+		}
 	}
 }
 
