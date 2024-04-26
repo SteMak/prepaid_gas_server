@@ -65,14 +65,13 @@ contract PGas {
 
   function nonce(address, uint256) external view returns (bool) {}
 
-  function messageValidate(Message calldata message) external view returns (Validation) {}
+  function gasOrder(uint256) external view returns (Order memory) {}
 
-  function getExecutorOrders(
-    address promisor,
-    bool onlyLive,
-    uint256 limit,
-    uint256 offset
-  ) external view returns (FilteredOrder[] memory) {}
+  function orderAccept(uint256) external {}
 
-  function execute(Message calldata message, bytes calldata signature) external {}
+  function messageValidate(Message calldata) external view returns (Validation) {}
+
+  function getExecutorOrders(address, bool, uint256, uint256) external view returns (FilteredOrder[] memory) {}
+
+  function execute(Message calldata, bytes calldata) external {}
 }

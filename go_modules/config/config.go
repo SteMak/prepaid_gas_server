@@ -30,8 +30,9 @@ var (
 	ValidatorPkey *ecdsa.PrivateKey
 	MinStartDelay uint64
 
-	ExecutorPkey    *ecdsa.PrivateKey
-	ExecutorAddress common.Address
+	ExecutorPkey     *ecdsa.PrivateKey
+	ExecutorAddress  common.Address
+	PrevalidateDelay uint64
 
 	err error
 )
@@ -103,6 +104,10 @@ func InitExecutor() error {
 		return errors.New("config: provider load error: " + err.Error())
 	}
 
+	if ProviderHTTP, err = url.Parse(os.Getenv("PROVIDER_HTTP")); err != nil {
+		return errors.New("config: provider load error: " + err.Error())
+	}
+
 	if ExecutorPkey, err = crypto.HexToECDSA(os.Getenv("EXECUTOR_PKEY")); err != nil {
 		return errors.New("config: executor pkey load error: " + err.Error())
 	} else if _, err = crypto.Sign(crypto.Keccak256(), ExecutorPkey); err != nil {
@@ -113,6 +118,10 @@ func InitExecutor() error {
 
 	if ChainID, err = strconv.ParseUint(os.Getenv("CHAIN_ID"), 10, 64); err != nil {
 		return errors.New("config: chain id load error: " + err.Error())
+	}
+
+	if PrevalidateDelay, err = strconv.ParseUint(os.Getenv("PREVALIDATE_DELAY"), 10, 32); err != nil {
+		return errors.New("config: prevalidate delay load error: " + err.Error())
 	}
 
 	return nil

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"errors"
+	"math/big"
 	"strconv"
 )
 
@@ -78,4 +79,8 @@ func (uint256 Uint256) ToUint32() (uint32, error) {
 	}
 
 	return uint32(uint256[31]) + uint32(uint256[30])*256 + uint32(uint256[29])*65536 + uint32(uint256[28])*16777216, nil
+}
+
+func (uint256 Uint256) ToBig() *big.Int {
+	return big.NewInt(0).SetBytes(uint256[:])
 }

@@ -2,7 +2,6 @@ package executor
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 	"time"
 
@@ -13,103 +12,149 @@ import (
 	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain/pgas"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/structs"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/utils"
 )
 
 var (
-	orders       map[*big.Int]*pgas.Order
-	last_message uint64
+	orders = make(map[*big.Int]*pgas.Order)
+	offset uint64
 
 	err error
 )
 
 func Init() error {
-	{
-		number, err := onchain.ClientHTTP.BlockNumber(context.Background())
-		if err != nil {
-			return err
-		}
-		offset := int64(0)
-		for {
-			result, err := onchain.PGas.GetExecutorOrders(
-				&bind.CallOpts{BlockNumber: big.NewInt(0).SetUint64(number)},
-				config.ExecutorAddress, true, big.NewInt(100), big.NewInt(offset),
-			)
-			if err != nil {
-				return err
-			}
-			for _, item := range result {
-				orders[item.Id] = &item.Order
-			}
-			if len(result) < 100 {
-				break
-			}
-			offset += 100
-		}
+	if err = FillOrders(); err != nil {
+		return err
 	}
-	{
-		offset := uint64(0)
-		for {
-			result, err := db.GetMessages(false, offset, 100)
-			if err != nil {
-				return err
-			}
-			for _, item := range result {
-				if orders[big.NewInt(0).SetBytes(item.Order[:])] != nil {
-					message, sign, _ := structs.UnwrapDBMessage(item)
-					go PlanMessage(message, sign)
-				}
-			}
-			last_message += uint64(len(result))
-			if len(result) < 100 {
-				break
-			}
-			offset += 100
-		}
+	if err = FillMessages(); err != nil {
+		return err
 	}
+
+	go MonitorMessages()
+	Acceptor(config.PGasAddress)
 
 	return nil
 }
 
-func MonitorMessages() {}
-
-func RunMessage(message structs.Message, sign structs.Signature) error {
-	tx, err := onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign[:])
+func FillOrders() error {
+	number, err := onchain.ClientHTTP.BlockNumber(context.Background())
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("tx sent: %s", tx.Hash().Hex())
+	opts := &bind.CallOpts{BlockNumber: big.NewInt(0).SetUint64(number)}
+
+	limit := int64(100)
+	offset := int64(0)
+	for {
+		if result, err := onchain.PGas.GetExecutorOrders(
+			opts, config.ExecutorAddress, true, big.NewInt(limit), big.NewInt(offset),
+		); err != nil {
+			return err
+		} else {
+			for _, item := range result {
+				orders[item.Id] = &item.Order
+			}
+
+			if int64(len(result)) < limit {
+				break
+			}
+		}
+
+		offset += limit
+	}
 
 	return nil
 }
 
-func PlanMessage(message structs.Message, sign structs.Signature) error {
-	order := orders[big.NewInt(0).SetBytes(message.Order[:])]
-	if order == nil {
-		return nil
-	}
+func FillMessages() error {
+	offset = uint64(0)
+	limit := uint64(100)
+	for {
+		result, err := db.GetMessages(false, limit, 100)
+		if err != nil {
+			return err
+		}
 
-	start, _ := message.Start.ToUint32()
-	ex_start := int64(start)
-	ex_end := int64(ex_start) + order.TxWindow.Int64()
+		for _, item := range result {
+			message, sign, _ := structs.UnwrapDBMessage(item)
+			go PlanMessage(message, sign)
+		}
 
-	// if ex_start < order.Start.Int64() || order.End.Int64() < ex_end {
-	// 	return nil
-	// }
-
-	if ex_end < time.Now().Unix() {
-		return nil
-	}
-
-	if ex_start-time.Now().Unix() > 100 {
-		time.Sleep(time.Duration(ex_start - 100 - time.Now().Unix()))
-		used, _ := onchain.PGas.Nonce(nil, common.Address(message.From), big.NewInt(0).SetBytes(message.Nonce[:]))
-		if used {
-			return nil
+		offset += uint64(len(result))
+		if uint64(len(result)) < limit {
+			break
 		}
 	}
 
-	time.Sleep(time.Duration(ex_start - time.Now().Unix()))
+	return nil
+}
 
-	return RunMessage(message, sign)
+func MonitorMessages() {
+	ticker := time.NewTicker(5 * time.Second)
+
+	for range ticker.C {
+		offset += uint64(1000)
+		result, _ := db.GetMessages(false, offset, 1000)
+		offset -= uint64(1000 - len(result))
+
+		for _, item := range result {
+			message, sign, _ := structs.UnwrapDBMessage(item)
+			go PlanMessage(message, sign)
+		}
+	}
+}
+
+func RunMessage(message structs.Message, sign structs.Signature) error {
+	_, err := onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign[:])
+
+	return err
+}
+
+func PlanOrder(id *big.Int, order pgas.Order) {
+	if orders[id] != nil {
+		return
+	}
+
+	orders[id] = &order
+
+	messages, err := db.GetMessagesByOrder(id.Uint64(), 0, 1)
+	if err != nil || uint64(len(messages)) > 0 {
+		return
+	}
+
+	if order.GasGuarantee.PerUnit.Cmp(big.NewInt(0)) != 0 {
+		return
+	}
+
+	_, err = onchain.PGas.OrderAccept(onchain.Transactor, id)
+	if err != nil {
+		orders[id] = nil
+		return
+	}
+}
+
+func PlanMessage(message structs.Message, sign structs.Signature) {
+	order := orders[message.Order.ToBig()]
+	if order == nil {
+		return
+	}
+
+	// start + window < now
+	if big.NewInt(0).Add(message.Start.ToBig(), order.TxWindow).Cmp(utils.UnixBig()) == -1 {
+		return
+	}
+
+	// start - now > delay
+	if big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Cmp(big.NewInt(int64(config.PrevalidateDelay))) == 1 {
+		time.Sleep(time.Duration(big.NewInt(0).Sub(big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()), big.NewInt(int64(config.PrevalidateDelay))).Int64()))
+		used, _ := onchain.PGas.Nonce(nil, common.Address(message.From), message.Nonce.ToBig())
+		if used {
+			return
+		}
+	}
+
+	time.Sleep(time.Duration(big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Int64()))
+
+	_ = RunMessage(message, sign)
 }

@@ -70,7 +70,7 @@ type Order struct {
 
 // PGasMetaData contains all meta data concerning the PGas contract.
 var PGasMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"domainSeparator\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"order\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"gas\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"structMessage\",\"name\":\"message\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"execute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"promisor\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"onlyLive\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"limit\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"offset\",\"type\":\"uint256\"}],\"name\":\"getExecutorOrders\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"manager\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"gas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expire\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"end\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txWindow\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"redeemWindow\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"perUnit\",\"type\":\"uint256\"}],\"internalType\":\"structGasPayment\",\"name\":\"gasPrice\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"perUnit\",\"type\":\"uint256\"}],\"internalType\":\"structGasPayment\",\"name\":\"gasGuarantee\",\"type\":\"tuple\"}],\"internalType\":\"structOrder\",\"name\":\"order\",\"type\":\"tuple\"},{\"internalType\":\"enumOrderStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"gasLeft\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"internalType\":\"structFilteredOrder[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"order\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"gas\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"structMessage\",\"name\":\"message\",\"type\":\"tuple\"}],\"name\":\"messageValidate\",\"outputs\":[{\"internalType\":\"enumValidation\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"domainSeparator\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"order\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"gas\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"structMessage\",\"name\":\"\",\"type\":\"tuple\"},{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"name\":\"execute\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"gasOrder\",\"outputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"manager\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"gas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expire\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"end\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txWindow\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"redeemWindow\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"perUnit\",\"type\":\"uint256\"}],\"internalType\":\"structGasPayment\",\"name\":\"gasPrice\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"perUnit\",\"type\":\"uint256\"}],\"internalType\":\"structGasPayment\",\"name\":\"gasGuarantee\",\"type\":\"tuple\"}],\"internalType\":\"structOrder\",\"name\":\"\",\"type\":\"tuple\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"getExecutorOrders\",\"outputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"id\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"manager\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"gas\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"expire\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"end\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"txWindow\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"redeemWindow\",\"type\":\"uint256\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"perUnit\",\"type\":\"uint256\"}],\"internalType\":\"structGasPayment\",\"name\":\"gasPrice\",\"type\":\"tuple\"},{\"components\":[{\"internalType\":\"address\",\"name\":\"token\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"perUnit\",\"type\":\"uint256\"}],\"internalType\":\"structGasPayment\",\"name\":\"gasGuarantee\",\"type\":\"tuple\"}],\"internalType\":\"structOrder\",\"name\":\"order\",\"type\":\"tuple\"},{\"internalType\":\"enumOrderStatus\",\"name\":\"status\",\"type\":\"uint8\"},{\"internalType\":\"uint256\",\"name\":\"gasLeft\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"executor\",\"type\":\"address\"}],\"internalType\":\"structFilteredOrder[]\",\"name\":\"\",\"type\":\"tuple[]\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"components\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"order\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"start\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"gas\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"data\",\"type\":\"bytes\"}],\"internalType\":\"structMessage\",\"name\":\"\",\"type\":\"tuple\"}],\"name\":\"messageValidate\",\"outputs\":[{\"internalType\":\"enumValidation\",\"name\":\"\",\"type\":\"uint8\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"nonce\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"name\":\"orderAccept\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // PGasABI is the input ABI used to generate the binding from.
@@ -250,12 +250,43 @@ func (_PGas *PGasCallerSession) DomainSeparator() ([32]byte, error) {
 	return _PGas.Contract.DomainSeparator(&_PGas.CallOpts)
 }
 
+// GasOrder is a free data retrieval call binding the contract method 0xa5e52509.
+//
+// Solidity: function gasOrder(uint256 ) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)))
+func (_PGas *PGasCaller) GasOrder(opts *bind.CallOpts, arg0 *big.Int) (Order, error) {
+	var out []interface{}
+	err := _PGas.contract.Call(opts, &out, "gasOrder", arg0)
+
+	if err != nil {
+		return *new(Order), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(Order)).(*Order)
+
+	return out0, err
+
+}
+
+// GasOrder is a free data retrieval call binding the contract method 0xa5e52509.
+//
+// Solidity: function gasOrder(uint256 ) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)))
+func (_PGas *PGasSession) GasOrder(arg0 *big.Int) (Order, error) {
+	return _PGas.Contract.GasOrder(&_PGas.CallOpts, arg0)
+}
+
+// GasOrder is a free data retrieval call binding the contract method 0xa5e52509.
+//
+// Solidity: function gasOrder(uint256 ) view returns((address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)))
+func (_PGas *PGasCallerSession) GasOrder(arg0 *big.Int) (Order, error) {
+	return _PGas.Contract.GasOrder(&_PGas.CallOpts, arg0)
+}
+
 // GetExecutorOrders is a free data retrieval call binding the contract method 0x8d6aef3e.
 //
-// Solidity: function getExecutorOrders(address promisor, bool onlyLive, uint256 limit, uint256 offset) view returns((uint256,(address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)),uint8,uint256,address)[])
-func (_PGas *PGasCaller) GetExecutorOrders(opts *bind.CallOpts, promisor common.Address, onlyLive bool, limit *big.Int, offset *big.Int) ([]FilteredOrder, error) {
+// Solidity: function getExecutorOrders(address , bool , uint256 , uint256 ) view returns((uint256,(address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)),uint8,uint256,address)[])
+func (_PGas *PGasCaller) GetExecutorOrders(opts *bind.CallOpts, arg0 common.Address, arg1 bool, arg2 *big.Int, arg3 *big.Int) ([]FilteredOrder, error) {
 	var out []interface{}
-	err := _PGas.contract.Call(opts, &out, "getExecutorOrders", promisor, onlyLive, limit, offset)
+	err := _PGas.contract.Call(opts, &out, "getExecutorOrders", arg0, arg1, arg2, arg3)
 
 	if err != nil {
 		return *new([]FilteredOrder), err
@@ -269,24 +300,24 @@ func (_PGas *PGasCaller) GetExecutorOrders(opts *bind.CallOpts, promisor common.
 
 // GetExecutorOrders is a free data retrieval call binding the contract method 0x8d6aef3e.
 //
-// Solidity: function getExecutorOrders(address promisor, bool onlyLive, uint256 limit, uint256 offset) view returns((uint256,(address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)),uint8,uint256,address)[])
-func (_PGas *PGasSession) GetExecutorOrders(promisor common.Address, onlyLive bool, limit *big.Int, offset *big.Int) ([]FilteredOrder, error) {
-	return _PGas.Contract.GetExecutorOrders(&_PGas.CallOpts, promisor, onlyLive, limit, offset)
+// Solidity: function getExecutorOrders(address , bool , uint256 , uint256 ) view returns((uint256,(address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)),uint8,uint256,address)[])
+func (_PGas *PGasSession) GetExecutorOrders(arg0 common.Address, arg1 bool, arg2 *big.Int, arg3 *big.Int) ([]FilteredOrder, error) {
+	return _PGas.Contract.GetExecutorOrders(&_PGas.CallOpts, arg0, arg1, arg2, arg3)
 }
 
 // GetExecutorOrders is a free data retrieval call binding the contract method 0x8d6aef3e.
 //
-// Solidity: function getExecutorOrders(address promisor, bool onlyLive, uint256 limit, uint256 offset) view returns((uint256,(address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)),uint8,uint256,address)[])
-func (_PGas *PGasCallerSession) GetExecutorOrders(promisor common.Address, onlyLive bool, limit *big.Int, offset *big.Int) ([]FilteredOrder, error) {
-	return _PGas.Contract.GetExecutorOrders(&_PGas.CallOpts, promisor, onlyLive, limit, offset)
+// Solidity: function getExecutorOrders(address , bool , uint256 , uint256 ) view returns((uint256,(address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)),uint8,uint256,address)[])
+func (_PGas *PGasCallerSession) GetExecutorOrders(arg0 common.Address, arg1 bool, arg2 *big.Int, arg3 *big.Int) ([]FilteredOrder, error) {
+	return _PGas.Contract.GetExecutorOrders(&_PGas.CallOpts, arg0, arg1, arg2, arg3)
 }
 
 // MessageValidate is a free data retrieval call binding the contract method 0x98548a38.
 //
-// Solidity: function messageValidate((address,uint256,uint256,uint256,address,uint256,bytes) message) view returns(uint8)
-func (_PGas *PGasCaller) MessageValidate(opts *bind.CallOpts, message Message) (uint8, error) {
+// Solidity: function messageValidate((address,uint256,uint256,uint256,address,uint256,bytes) ) view returns(uint8)
+func (_PGas *PGasCaller) MessageValidate(opts *bind.CallOpts, arg0 Message) (uint8, error) {
 	var out []interface{}
-	err := _PGas.contract.Call(opts, &out, "messageValidate", message)
+	err := _PGas.contract.Call(opts, &out, "messageValidate", arg0)
 
 	if err != nil {
 		return *new(uint8), err
@@ -300,16 +331,16 @@ func (_PGas *PGasCaller) MessageValidate(opts *bind.CallOpts, message Message) (
 
 // MessageValidate is a free data retrieval call binding the contract method 0x98548a38.
 //
-// Solidity: function messageValidate((address,uint256,uint256,uint256,address,uint256,bytes) message) view returns(uint8)
-func (_PGas *PGasSession) MessageValidate(message Message) (uint8, error) {
-	return _PGas.Contract.MessageValidate(&_PGas.CallOpts, message)
+// Solidity: function messageValidate((address,uint256,uint256,uint256,address,uint256,bytes) ) view returns(uint8)
+func (_PGas *PGasSession) MessageValidate(arg0 Message) (uint8, error) {
+	return _PGas.Contract.MessageValidate(&_PGas.CallOpts, arg0)
 }
 
 // MessageValidate is a free data retrieval call binding the contract method 0x98548a38.
 //
-// Solidity: function messageValidate((address,uint256,uint256,uint256,address,uint256,bytes) message) view returns(uint8)
-func (_PGas *PGasCallerSession) MessageValidate(message Message) (uint8, error) {
-	return _PGas.Contract.MessageValidate(&_PGas.CallOpts, message)
+// Solidity: function messageValidate((address,uint256,uint256,uint256,address,uint256,bytes) ) view returns(uint8)
+func (_PGas *PGasCallerSession) MessageValidate(arg0 Message) (uint8, error) {
+	return _PGas.Contract.MessageValidate(&_PGas.CallOpts, arg0)
 }
 
 // Nonce is a free data retrieval call binding the contract method 0xe8b1a9b2.
@@ -345,21 +376,42 @@ func (_PGas *PGasCallerSession) Nonce(arg0 common.Address, arg1 *big.Int) (bool,
 
 // Execute is a paid mutator transaction binding the contract method 0x03f6a219.
 //
-// Solidity: function execute((address,uint256,uint256,uint256,address,uint256,bytes) message, bytes signature) returns()
-func (_PGas *PGasTransactor) Execute(opts *bind.TransactOpts, message Message, signature []byte) (*types.Transaction, error) {
-	return _PGas.contract.Transact(opts, "execute", message, signature)
+// Solidity: function execute((address,uint256,uint256,uint256,address,uint256,bytes) , bytes ) returns()
+func (_PGas *PGasTransactor) Execute(opts *bind.TransactOpts, arg0 Message, arg1 []byte) (*types.Transaction, error) {
+	return _PGas.contract.Transact(opts, "execute", arg0, arg1)
 }
 
 // Execute is a paid mutator transaction binding the contract method 0x03f6a219.
 //
-// Solidity: function execute((address,uint256,uint256,uint256,address,uint256,bytes) message, bytes signature) returns()
-func (_PGas *PGasSession) Execute(message Message, signature []byte) (*types.Transaction, error) {
-	return _PGas.Contract.Execute(&_PGas.TransactOpts, message, signature)
+// Solidity: function execute((address,uint256,uint256,uint256,address,uint256,bytes) , bytes ) returns()
+func (_PGas *PGasSession) Execute(arg0 Message, arg1 []byte) (*types.Transaction, error) {
+	return _PGas.Contract.Execute(&_PGas.TransactOpts, arg0, arg1)
 }
 
 // Execute is a paid mutator transaction binding the contract method 0x03f6a219.
 //
-// Solidity: function execute((address,uint256,uint256,uint256,address,uint256,bytes) message, bytes signature) returns()
-func (_PGas *PGasTransactorSession) Execute(message Message, signature []byte) (*types.Transaction, error) {
-	return _PGas.Contract.Execute(&_PGas.TransactOpts, message, signature)
+// Solidity: function execute((address,uint256,uint256,uint256,address,uint256,bytes) , bytes ) returns()
+func (_PGas *PGasTransactorSession) Execute(arg0 Message, arg1 []byte) (*types.Transaction, error) {
+	return _PGas.Contract.Execute(&_PGas.TransactOpts, arg0, arg1)
+}
+
+// OrderAccept is a paid mutator transaction binding the contract method 0x667aa606.
+//
+// Solidity: function orderAccept(uint256 ) returns()
+func (_PGas *PGasTransactor) OrderAccept(opts *bind.TransactOpts, arg0 *big.Int) (*types.Transaction, error) {
+	return _PGas.contract.Transact(opts, "orderAccept", arg0)
+}
+
+// OrderAccept is a paid mutator transaction binding the contract method 0x667aa606.
+//
+// Solidity: function orderAccept(uint256 ) returns()
+func (_PGas *PGasSession) OrderAccept(arg0 *big.Int) (*types.Transaction, error) {
+	return _PGas.Contract.OrderAccept(&_PGas.TransactOpts, arg0)
+}
+
+// OrderAccept is a paid mutator transaction binding the contract method 0x667aa606.
+//
+// Solidity: function orderAccept(uint256 ) returns()
+func (_PGas *PGasTransactorSession) OrderAccept(arg0 *big.Int) (*types.Transaction, error) {
+	return _PGas.Contract.OrderAccept(&_PGas.TransactOpts, arg0)
 }

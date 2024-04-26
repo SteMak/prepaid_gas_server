@@ -102,11 +102,11 @@ func ValidateSeparator(expected_separator structs.Hash) error {
 func WrapPGasMessage(message structs.Message) pgas.Message {
 	return pgas.Message{
 		From:  common.Address(message.From),
-		Nonce: big.NewInt(0).SetBytes(message.Nonce[:]),
-		Order: big.NewInt(0).SetBytes(message.Order[:]),
-		Start: big.NewInt(0).SetBytes(message.Start[:]),
+		Nonce: message.Nonce.ToBig(),
+		Order: message.Order.ToBig(),
+		Start: message.Start.ToBig(),
 		To:    common.Address(message.To),
-		Gas:   big.NewInt(0).SetBytes(message.Gas[:]),
+		Gas:   message.Gas.ToBig(),
 		Data:  message.Data,
 	}
 }
