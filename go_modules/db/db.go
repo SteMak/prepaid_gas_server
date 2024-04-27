@@ -30,26 +30,6 @@ func Init(user string, password string) error {
 		return errors.New("db: connection error: " + err.Error())
 	}
 
-	return nil
-}
-
-func InitValidator(user string, password string) error {
-	if err = Init(user, password); err != nil {
-		return err
-	}
-
-	if err = InitMessages(); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func InitExecutor(user string, password string) error {
-	if err = Init(user, password); err != nil {
-		return err
-	}
-
 	if err = InitMessages(); err != nil {
 		return err
 	}

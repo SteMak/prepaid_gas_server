@@ -8,7 +8,7 @@ import (
 	"github.com/prepaidGas/prepaidgas-server/go_modules/structs"
 )
 
-func ValidateOffchain(message structs.Message, min_delay uint64) error {
+func ValidateOffchain(message structs.Message, min_delay uint32) error {
 	if start, err := message.Start.ToUint32(); err != nil {
 		return err
 	} else if int64(start) <= time.Now().Unix()+int64(min_delay) {

@@ -48,22 +48,14 @@ var (
 	err error
 )
 
-func Init(provider *url.URL, pgas_address structs.Address) error {
-	if ClientHTTP, err = ethclient.Dial(provider.String()); err != nil {
-		return errors.New("onchain: ethclient dial error: " + err.Error())
-	} else if PGas, err = pgas.NewPGas(common.BytesToAddress(pgas_address[:]), ClientHTTP); err != nil {
-		return errors.New("onchain: pgas instance error: " + err.Error())
-	}
-
-	return nil
-}
-
-func InitValidator(provider *url.URL, pgas_address structs.Address, expected_separator structs.Hash) error {
-	if err = Init(provider, pgas_address); err != nil {
+func InitValidator(provider *url.URL, pgas_address common.Address, expected_separator structs.Hash) error {
+	if err = dialProviderHTTP(provider); err != nil {
+		return err
+	} else if err = connectPGas(pgas_address); err != nil {
 		return err
 	}
 
-	if err = ValidateSeparator(expected_separator); err != nil {
+	if err = validateSeparator(expected_separator); err != nil {
 		return err
 	}
 
@@ -73,32 +65,79 @@ func InitValidator(provider *url.URL, pgas_address structs.Address, expected_sep
 func InitExecutor(
 	provider_http *url.URL,
 	provider_ws *url.URL,
-	pgas_address structs.Address,
-	treasury structs.Address,
+	pgas_address common.Address,
+	treasury_address common.Address,
 	pkey *ecdsa.PrivateKey,
+	gasfeecap *int64,
+	gastipcap *int64,
 	chain_id uint64,
 ) error {
-	if err = Init(provider_http, pgas_address); err != nil {
+	if err = dialProviderWS(provider_ws); err != nil {
 		return err
 	}
 
-	if Treasury, err = pgas.NewPGas(common.BytesToAddress(treasury[:]), ClientHTTP); err != nil {
-		return errors.New("onchain: treasury instance error: " + err.Error())
+	if err = dialProviderHTTP(provider_http); err != nil {
+		return err
+	} else if err = connectPGas(pgas_address); err != nil {
+		return err
+	} else if err = connectTreasury(treasury_address); err != nil {
+		return err
 	}
 
-	if ClientWS, err = ethclient.Dial(provider_ws.String()); err != nil {
-		return errors.New("onchain: ethclient dial error: " + err.Error())
-	}
-
-	Transactor, err = bind.NewKeyedTransactorWithChainID(pkey, big.NewInt(0).SetUint64(chain_id))
-	if err != nil {
+	if err = configureTransactor(pkey, gasfeecap, gastipcap, chain_id); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func ValidateSeparator(expected_separator structs.Hash) error {
+func dialProviderHTTP(provider *url.URL) error {
+	if ClientHTTP, err = ethclient.Dial(provider.String()); err != nil {
+		return errors.New("onchain: ethclient dial error: " + err.Error())
+	}
+
+	return nil
+}
+
+func dialProviderWS(provider *url.URL) error {
+	if ClientWS, err = ethclient.Dial(provider.String()); err != nil {
+		return errors.New("onchain: ethclient dial error: " + err.Error())
+	}
+
+	return nil
+}
+
+func connectPGas(address common.Address) error {
+	if PGas, err = pgas.NewPGas(address, ClientHTTP); err != nil {
+		return errors.New("onchain: pgas instance error: " + err.Error())
+	}
+
+	return nil
+}
+
+func connectTreasury(address common.Address) error {
+	if Treasury, err = pgas.NewPGas(address, ClientHTTP); err != nil {
+		return errors.New("onchain: treasury instance error: " + err.Error())
+	}
+
+	return nil
+}
+
+func configureTransactor(pkey *ecdsa.PrivateKey, gasfeecap, gastipcap *int64, chain_id uint64) error {
+	if Transactor, err = bind.NewKeyedTransactorWithChainID(pkey, big.NewInt(0).SetUint64(chain_id)); err != nil {
+		return err
+	}
+	if gasfeecap != nil {
+		Transactor.GasFeeCap = big.NewInt(*gasfeecap)
+	}
+	if gastipcap != nil {
+		Transactor.GasTipCap = big.NewInt(*gastipcap)
+	}
+
+	return nil
+}
+
+func validateSeparator(expected_separator structs.Hash) error {
 	separator, err := PGas.DomainSeparator(nil)
 	if err != nil {
 		return errors.New("onchain: SC query error: " + err.Error())
@@ -121,4 +160,28 @@ func WrapPGasMessage(message structs.Message) pgas.Message {
 		Gas:   message.Gas.ToBig(),
 		Data:  message.Data,
 	}
+}
+
+func WrapPGasOrder(data []byte) (pgas.Order, error) {
+	if len(data) != 352 {
+		return pgas.Order{}, errors.New("onchain: incorrect data length")
+	}
+
+	return pgas.Order{
+		Manager:      common.BytesToAddress(data[0:32]),
+		Gas:          big.NewInt(0).SetBytes(data[32:64]),
+		Expire:       big.NewInt(0).SetBytes(data[64:96]),
+		Start:        big.NewInt(0).SetBytes(data[96:128]),
+		End:          big.NewInt(0).SetBytes(data[128:160]),
+		TxWindow:     big.NewInt(0).SetBytes(data[160:192]),
+		RedeemWindow: big.NewInt(0).SetBytes(data[192:224]),
+		GasPrice: pgas.GasPayment{
+			Token:   common.BytesToAddress(data[224:256]),
+			PerUnit: big.NewInt(0).SetBytes(data[256:288]),
+		},
+		GasGuarantee: pgas.GasPayment{
+			Token:   common.BytesToAddress(data[288:320]),
+			PerUnit: big.NewInt(0).SetBytes(data[320:352]),
+		},
+	}, nil
 }

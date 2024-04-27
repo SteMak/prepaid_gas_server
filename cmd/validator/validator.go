@@ -24,14 +24,12 @@ func main() {
 		log.Fatalln(err.Error())
 	}
 
-	err = db.InitValidator(config.PostgresUser, config.PostgresPassword)
+	err = db.Init(config.PostgresUser, config.PostgresPassword)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	defer db.DB.Close()
 
-	err = validator.Init(config.ValidatorPort)
-	if err != nil {
-		log.Fatalln(err.Error())
-	}
+	validator.Init(config.MinStartDelay, config.DomainSeparator, config.ValidatorPkey)
+	validator.Start(config.ValidatorPort)
 }

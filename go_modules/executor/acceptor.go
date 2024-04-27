@@ -2,6 +2,7 @@ package executor
 
 import (
 	"context"
+	"encoding/hex"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum"
@@ -9,15 +10,19 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 
+	"github.com/prepaidGas/prepaidgas-server/go_modules/db"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain/pgas"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/structs"
+	"github.com/prepaidGas/prepaidgas-server/go_modules/utils"
 )
 
-func Acceptor(pgas_address structs.Address) error {
+func acceptor(pgas_address common.Address) error {
 	query := ethereum.FilterQuery{
-		Addresses: []common.Address{common.BytesToAddress(pgas_address[:])},
-		Topics:    [][]common.Hash{{common.BytesToHash(crypto.Keccak256([]byte("OrderCreate(uint256,(address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)))")))}},
+		Addresses: []common.Address{pgas_address},
+		Topics: [][]common.Hash{{common.BytesToHash(crypto.Keccak256([]byte(
+			"OrderCreate(uint256,(address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)))",
+		)))}},
 	}
 
 	events := make(chan types.Log)
@@ -29,24 +34,13 @@ func Acceptor(pgas_address structs.Address) error {
 	for {
 		select {
 		case err = <-subscription.Err():
-			return err
+			for err != nil {
+				subscription, err = onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events)
+			}
 		case event := <-events:
-			order := pgas.Order{
-				Manager:      common.BytesToAddress(event.Data[0:32]),
-				Gas:          big.NewInt(0).SetBytes(event.Data[32:64]),
-				Expire:       big.NewInt(0).SetBytes(event.Data[64:96]),
-				Start:        big.NewInt(0).SetBytes(event.Data[96:128]),
-				End:          big.NewInt(0).SetBytes(event.Data[128:160]),
-				TxWindow:     big.NewInt(0).SetBytes(event.Data[160:192]),
-				RedeemWindow: big.NewInt(0).SetBytes(event.Data[192:224]),
-				GasPrice: pgas.GasPayment{
-					Token:   common.BytesToAddress(event.Data[224:256]),
-					PerUnit: big.NewInt(0).SetBytes(event.Data[256:288]),
-				},
-				GasGuarantee: pgas.GasPayment{
-					Token:   common.BytesToAddress(event.Data[288:320]),
-					PerUnit: big.NewInt(0).SetBytes(event.Data[320:352]),
-				},
+			order, err := onchain.WrapPGasOrder(event.Data)
+			if err != nil {
+				continue
 			}
 
 			id, err := structs.WrapUint256(event.Topics[1][:])
@@ -54,7 +48,44 @@ func Acceptor(pgas_address structs.Address) error {
 				continue
 			}
 
-			PlanOrder(id, order)
+			planOrder(id, order)
 		}
 	}
+}
+
+func planOrder(id structs.Uint256, order pgas.Order) {
+	if orders[hex.EncodeToString(id[:])] != nil {
+		return
+	}
+
+	if isOrderRisky(id, order) {
+		return
+	}
+
+	orders[hex.EncodeToString(id[:])] = &order
+
+	_, err = onchain.Treasury.OrderAccept(onchain.Transactor, id.ToBig())
+	if err != nil {
+		orders[hex.EncodeToString(id[:])] = nil
+		return
+	}
+}
+
+func isOrderRisky(id structs.Uint256, order pgas.Order) bool {
+	messages, err := db.GetMessagesByOrder(id, 0, 1)
+	if err != nil || uint64(len(messages)) > 0 {
+		return true
+	}
+
+	if order.GasGuarantee.PerUnit.Cmp(big.NewInt(0)) == 0 {
+		return false
+	}
+
+	if order.GasGuarantee.PerUnit.Cmp(big.NewInt(100001)) == -1 &&
+		order.Gas.Cmp(big.NewInt(1000001)) == -1 &&
+		big.NewInt(0).Add(utils.UnixBig(), big.NewInt(60*60*30)).Cmp(order.End) == 1 {
+		return false
+	}
+
+	return true
 }

@@ -20,20 +20,28 @@ func main() {
 	}
 
 	err = onchain.InitExecutor(
-		config.ProviderHTTP, config.ProviderWS, config.PGasAddress, config.TreasuryAddress, config.ExecutorPkey, config.ChainID,
+		config.ProviderHTTP,
+		config.ProviderWS,
+		config.PGasAddress,
+		config.TreasuryAddress,
+		config.ExecutorPkey,
+		config.GasFeeCap,
+		config.GasTipCap,
+		config.ChainID,
 	)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	err = db.InitExecutor(config.PostgresUser, config.PostgresPassword)
+	err = db.Init(config.PostgresUser, config.PostgresPassword)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 	defer db.DB.Close()
 
-	err = executor.Init()
+	err = executor.Init(config.ExecutorAddress, config.PrevalidateDelay)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
+	executor.Start(config.PGasAddress)
 }
