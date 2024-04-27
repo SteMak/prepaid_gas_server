@@ -50,3 +50,9 @@ func (target *Signature) Scan(value interface{}) error {
 	*target, err = WrapSignature(value.([]byte))
 	return err
 }
+
+func (sign *Signature) ToOnchain() []byte {
+	data := sign[:]
+	data[64] += 27
+	return data
+}

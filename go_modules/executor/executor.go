@@ -2,6 +2,7 @@ package executor
 
 import (
 	"context"
+	"encoding/hex"
 	"math/big"
 	"time"
 
@@ -16,7 +17,7 @@ import (
 )
 
 var (
-	orders = make(map[*big.Int]*pgas.Order)
+	orders = make(map[string]*pgas.Order)
 	offset uint64
 
 	err error
@@ -53,7 +54,9 @@ func FillOrders() error {
 			return err
 		} else {
 			for _, item := range result {
-				orders[item.Id] = &item.Order
+				var id structs.Uint256
+				id.Scan(item.Id.Bytes())
+				orders[hex.EncodeToString(id[:])] = &item.Order
 			}
 
 			if int64(len(result)) < limit {
@@ -91,32 +94,40 @@ func FillMessages() error {
 }
 
 func MonitorMessages() {
-	ticker := time.NewTicker(5 * time.Second)
-
-	for range ticker.C {
-		offset += uint64(1000)
+	for {
 		result, _ := db.GetMessages(false, offset, 1000)
-		offset -= uint64(1000 - len(result))
+		offset += uint64(len(result))
 
 		for _, item := range result {
 			message, sign, _ := structs.UnwrapDBMessage(item)
 			go PlanMessage(message, sign)
 		}
+
+		time.Sleep(time.Second * 5)
 	}
 }
 
 func RunMessage(message structs.Message, sign structs.Signature) error {
-	_, err := onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign[:])
+	_, err := onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
+	if err != nil {
+		// TODO: Make optional for local node
+		transactor := *onchain.Transactor
+		transactor.GasFeeCap = big.NewInt(1000)
+		transactor.GasTipCap = big.NewInt(1000)
 
-	return err
+		_, err = onchain.PGas.Execute(&transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
+		return err
+	}
+
+	return nil
 }
 
 func PlanOrder(id structs.Uint256, order pgas.Order) {
-	if orders[id.ToBig()] != nil {
+	if orders[hex.EncodeToString(id[:])] != nil {
 		return
 	}
 
-	orders[id.ToBig()] = &order
+	orders[hex.EncodeToString(id[:])] = &order
 
 	messages, err := db.GetMessagesByOrder(id, 0, 1)
 	if err != nil || uint64(len(messages)) > 0 {
@@ -130,20 +141,20 @@ func PlanOrder(id structs.Uint256, order pgas.Order) {
 	_, err = onchain.Treasury.OrderAccept(onchain.Transactor, id.ToBig())
 	if err != nil {
 		// TODO: Make optional for local node
-		transactor := onchain.Transactor
+		transactor := *onchain.Transactor
 		transactor.GasFeeCap = big.NewInt(1000)
 		transactor.GasTipCap = big.NewInt(1000)
 
-		_, err = onchain.Treasury.OrderAccept(transactor, id.ToBig())
+		_, err = onchain.Treasury.OrderAccept(&transactor, id.ToBig())
 		if err != nil {
-			orders[id.ToBig()] = nil
+			orders[hex.EncodeToString(id[:])] = nil
 			return
 		}
 	}
 }
 
 func PlanMessage(message structs.Message, sign structs.Signature) {
-	order := orders[message.Order.ToBig()]
+	order := orders[hex.EncodeToString(message.Order[:])]
 	if order == nil {
 		return
 	}
@@ -155,14 +166,21 @@ func PlanMessage(message structs.Message, sign structs.Signature) {
 
 	// start - now > delay
 	if big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Cmp(big.NewInt(int64(config.PrevalidateDelay))) == 1 {
-		time.Sleep(time.Duration(big.NewInt(0).Sub(big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()), big.NewInt(int64(config.PrevalidateDelay))).Int64()))
+		time.Sleep(time.Second * time.Duration(
+			big.NewInt(0).Sub(
+				big.NewInt(0).Sub(
+					message.Start.ToBig(), utils.UnixBig(),
+				),
+				big.NewInt(int64(config.PrevalidateDelay)),
+			).Int64(),
+		))
 		used, _ := onchain.PGas.Nonce(nil, common.Address(message.From), message.Nonce.ToBig())
 		if used {
 			return
 		}
 	}
 
-	time.Sleep(time.Duration(big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Int64()))
+	time.Sleep(time.Second * time.Duration(big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Int64()))
 
 	_ = RunMessage(message, sign)
 }
