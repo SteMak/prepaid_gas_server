@@ -120,7 +120,7 @@ func connectTreasury(address common.Address) error {
 	if instance, err := pgas.NewPGas(address, ClientHTTP); err != nil {
 		return errors.New("onchain: treasury instance error: " + err.Error())
 	} else {
-		PGas = instance
+		Treasury = instance
 	}
 
 	return nil
