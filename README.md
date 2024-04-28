@@ -1,11 +1,37 @@
-# Prepaid Gas Server
+# prepaidGas Server
 
-How to interact with validator?
+The server imcludes `validator` and `executor` scripts
 
-`curl -d '{"origSign":"0x6cec8506276e7b6edd424941174a2c8fa6a53ed26adb5b668a600de9540e3c106559f5c7a6d0dd1bfe11b4550b7a5a047f83d84a894de0bc0faa38159fe043571c","message":{"from":"0x70997970C51812dc3A010C7d01b50e0d17dc79C8","nonce":"0x00","order":"0x00","start":"0xffeeffee","to":"0x0000000000000000000000000000000000000000","gas":"0x00","data":"0x"}}' -X POST http://localhost:8001/validate`
+- The `validator` script accepts pending transactions and provides them with confirming signature
+- The `executor` script accepts nice orders and plans corresponding transactions for execution
 
-`curl 'http://localhost:8001/load?offset=0&reverse=false'`
+## HTTP
 
-How to run psql?
+The validator runs http endpoint:
 
+- POST `/validate`
+  - requires body `{ "origSign": {hexstr 65 bytes user signature}, "message": { "from": {hexstr 40 bytes address}, "nonce": {hexstr number}, "order": {hexstr number}, "start": {hexstr unix timestamp}, "to": {hexstr 40 bytes address}, "gas": {hexstr number}, "data": {hexstr unlimited size data} } }`
+  - returns `{hexstr 65 bytes confirm signature}`
+- GET `/load`
+  - requires parameters `?offset={number}&reverse={boolean}`
+  - returns `{ "id": {uint64 database id}, "validSign": {hexstr 65 bytes confirm signature}, "origSign": {hexstr 65 bytes user signature}, "message": { "from": {hexstr 40 bytes address}, "nonce": {hexstr number}, "order": {hexstr number}, "start": {hexstr unix timestamp}, "to": {hexstr 40 bytes address}, "gas": {hexstr number}, "data": {hexstr unlimited size data} } }`
+
+## DB
+
+To run the scripts running db is required:
 `source .env && docker run -e POSTGRES_PASSWORD=$POSTGRES_PASSWORD -e POSTGRES_USER=$POSTGRES_USER -p 5432:5432 postgres:15.4`
+
+## Setup
+
+The `.env` file is needed to run the scripts, there is `.env.sample` presented in the repo
+
+Try running with the commands:
+
+```
+go run ./cmd/executor/executor.go
+go run ./cmd/validator/validator.go
+```
+
+## Executor
+
+There is the `IsOrderRisky` function in the `go_modules/utils/order.go` file, modify it to make executor accept more orders

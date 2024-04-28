@@ -146,6 +146,6 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	io.WriteString(w, hex.EncodeToString(valid_sign[:]))
+	io.WriteString(w, "0x"+hex.EncodeToString(valid_sign[:]))
 	log.Printf("\"%s\" success: \"%#v\"\n\n", r.URL.String(), db_message)
 }
