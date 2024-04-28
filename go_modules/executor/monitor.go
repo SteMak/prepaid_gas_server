@@ -55,7 +55,7 @@ func planMessage(message structs.Message, sign structs.Signature) {
 	// start - now > delay
 	if big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Cmp(delay) == 1 {
 		sleep := big.NewInt(0).Sub(big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()), delay)
-		if sleep.IsInt64() {
+		if !sleep.IsInt64() {
 			log.Printf("message sleep time out of life: \"%#v\" %s\n", message, sleep.Text(16))
 			return
 		}
@@ -69,7 +69,7 @@ func planMessage(message structs.Message, sign structs.Signature) {
 	}
 
 	sleep := big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig())
-	if sleep.IsInt64() {
+	if !sleep.IsInt64() {
 		log.Printf("message sleep time out of life: \"%#v\" %s\n", message, sleep.Text(16))
 		return
 	}
