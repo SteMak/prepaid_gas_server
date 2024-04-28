@@ -26,7 +26,7 @@ func (value Uint256) MarshalJSON() ([]byte, error) {
 func (target *Uint256) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
 	if err != nil {
-		return err
+		return errors.New("uint256: unquote: " + err.Error())
 	}
 
 	if len(hexstr) >= 2 && hexstr[0:2] == "0x" {
@@ -41,7 +41,7 @@ func (target *Uint256) UnmarshalJSON(value []byte) error {
 
 	decoded, err := hex.DecodeString(string(hexstr))
 	if err != nil {
-		return err
+		return errors.New("uint256: decode hex: " + err.Error())
 	}
 
 	*target, err = WrapUint256(decoded)
@@ -83,4 +83,8 @@ func (uint256 Uint256) ToUint32() (uint32, error) {
 
 func (uint256 Uint256) ToBig() *big.Int {
 	return big.NewInt(0).SetBytes(uint256[:])
+}
+
+func (uint256 Uint256) ToString() string {
+	return hex.EncodeToString(uint256[:])
 }

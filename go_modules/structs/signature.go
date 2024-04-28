@@ -24,7 +24,7 @@ func (value Signature) MarshalJSON() ([]byte, error) {
 func (target *Signature) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
 	if err != nil {
-		return err
+		return errors.New("signature: unquote: " + err.Error())
 	}
 
 	if len(hexstr) >= 2 && hexstr[0:2] == "0x" {
@@ -36,7 +36,7 @@ func (target *Signature) UnmarshalJSON(value []byte) error {
 
 	decoded, err := hex.DecodeString(string(hexstr))
 	if err != nil {
-		return err
+		return errors.New("signature: decode hex: " + err.Error())
 	}
 	if decoded[64] == 27 || decoded[64] == 28 {
 		decoded[64] -= 27

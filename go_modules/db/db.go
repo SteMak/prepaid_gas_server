@@ -61,9 +61,13 @@ func GetMessages(reverse bool, offset uint64, limit uint64) ([]structs.DBMessage
 		strconv.FormatUint(limit, 10),
 		strconv.FormatUint(offset, 10),
 	)
-	err := DB.Select(&messages, script)
 
-	return messages, err
+	err := DB.Select(&messages, script)
+	if err != nil {
+		return messages, errors.New("db: get messages: " + err.Error())
+	}
+
+	return messages, nil
 }
 
 func GetMessagesByOrder(order structs.Uint256, offset uint64, limit uint64) ([]structs.DBMessage, error) {
@@ -75,9 +79,13 @@ func GetMessagesByOrder(order structs.Uint256, offset uint64, limit uint64) ([]s
 		strconv.FormatUint(limit, 10),
 		strconv.FormatUint(offset, 10),
 	)
-	err := DB.Select(&messages, script)
 
-	return messages, err
+	err := DB.Select(&messages, script)
+	if err != nil {
+		return messages, errors.New("db: get messages by order: " + err.Error())
+	}
+
+	return messages, nil
 }
 
 func InsertMessage(message structs.DBMessage) error {
@@ -103,6 +111,9 @@ func InsertMessage(message structs.DBMessage) error {
 		hex.EncodeToString(message.OrigSign[:]),
 		hex.EncodeToString(message.ValidSign[:]),
 	)
+	if err != nil {
+		return errors.New("db: insert message: " + err.Error())
+	}
 
-	return err
+	return nil
 }

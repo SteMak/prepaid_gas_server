@@ -2,8 +2,10 @@ package executor
 
 import (
 	"context"
-	"encoding/hex"
+	"errors"
+	"log"
 	"math/big"
+	"time"
 
 	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/common"
@@ -17,7 +19,13 @@ import (
 	"github.com/prepaidGas/prepaidgas-server/go_modules/utils"
 )
 
-func acceptor(pgas_address common.Address) error {
+var (
+	query        ethereum.FilterQuery
+	events       = make(chan types.Log)
+	subscription ethereum.Subscription
+)
+
+func initAcceptor(pgas_address common.Address) error {
 	query := ethereum.FilterQuery{
 		Addresses: []common.Address{pgas_address},
 		Topics: [][]common.Hash{{common.BytesToHash(crypto.Keccak256([]byte(
@@ -25,26 +33,33 @@ func acceptor(pgas_address common.Address) error {
 		)))}},
 	}
 
-	events := make(chan types.Log)
-	subscription, err := onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events)
-	if err != nil {
-		return err
+	if subscription, err = onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events); err != nil {
+		return errors.New("subscription: " + err.Error())
 	}
 
+	return nil
+}
+
+func acceptor() {
 	for {
 		select {
 		case err = <-subscription.Err():
 			for err != nil {
+				log.Printf("subscription: %s\n", err.Error())
+				time.Sleep(time.Second)
+
 				subscription, err = onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events)
 			}
 		case event := <-events:
 			order, err := onchain.WrapPGasOrder(event.Data)
 			if err != nil {
+				log.Printf("event data not order: \"%#v\": %s\n", event, err.Error())
 				continue
 			}
 
 			id, err := structs.WrapUint256(event.Topics[1][:])
 			if err != nil {
+				log.Printf("event topic not id: \"%#v\": %s\n", event, err.Error())
 				continue
 			}
 
@@ -54,21 +69,27 @@ func acceptor(pgas_address common.Address) error {
 }
 
 func planOrder(id structs.Uint256, order pgas.Order) {
-	if orders[hex.EncodeToString(id[:])] != nil {
+	if orders[id.ToString()] != nil {
+		log.Printf("order exists: %s\n", id.ToString())
 		return
 	}
+
+	orders[id.ToString()] = &order
 
 	if isOrderRisky(id, order) {
+		log.Printf("order risky: %s\n", id.ToString())
 		return
 	}
-
-	orders[hex.EncodeToString(id[:])] = &order
 
 	_, err = onchain.Treasury.OrderAccept(onchain.Transactor, id.ToBig())
 	if err != nil {
-		orders[hex.EncodeToString(id[:])] = nil
+		orders[id.ToString()] = nil
+
+		log.Printf("order accept: %s: %s\n", id.ToString(), err.Error())
 		return
 	}
+
+	log.Printf("order accept success: %s\n", id.ToString())
 }
 
 func isOrderRisky(id structs.Uint256, order pgas.Order) bool {

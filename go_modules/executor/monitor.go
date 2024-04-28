@@ -1,7 +1,7 @@
 package executor
 
 import (
-	"encoding/hex"
+	"log"
 	"math/big"
 	"time"
 
@@ -12,9 +12,22 @@ import (
 	"github.com/prepaidGas/prepaidgas-server/go_modules/utils"
 )
 
-func monitorMessages() {
+var (
+	delay *big.Int
+)
+
+func initMonitor(prevalidate_delay uint32) {
+	delay = big.NewInt(int64(prevalidate_delay))
+}
+
+func monitor() {
 	for {
-		result, _ := db.GetMessages(false, offset, 1000)
+		result, err := db.GetMessages(false, offset, 1000)
+		if err != nil {
+			log.Printf("monitor db: %s\n", err.Error())
+			time.Sleep(time.Second)
+			continue
+		}
 		offset += uint64(len(result))
 
 		for _, item := range result {
@@ -27,37 +40,53 @@ func monitorMessages() {
 }
 
 func planMessage(message structs.Message, sign structs.Signature) {
-	order := orders[hex.EncodeToString(message.Order[:])]
+	order := orders[message.Order.ToString()]
 	if order == nil {
+		log.Printf("message order not promised: \"%#v\"\n", message)
 		return
 	}
 
 	// start + window < now
 	if big.NewInt(0).Add(message.Start.ToBig(), order.TxWindow).Cmp(utils.UnixBig()) == -1 {
+		log.Printf("message in past: \"%#v\"\n", message)
 		return
 	}
 
 	// start - now > delay
-	if big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Cmp(big.NewInt(int64(delay))) == 1 {
-		time.Sleep(time.Second * time.Duration(
-			big.NewInt(0).Sub(
-				big.NewInt(0).Sub(
-					message.Start.ToBig(), utils.UnixBig(),
-				),
-				big.NewInt(int64(delay)),
-			).Int64(),
-		))
+	if big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Cmp(delay) == 1 {
+		sleep := big.NewInt(0).Sub(big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()), delay)
+		if sleep.IsInt64() {
+			log.Printf("message sleep time out of life: \"%#v\" %s\n", message, sleep.Text(16))
+			return
+		}
+
+		time.Sleep(time.Second * time.Duration(sleep.Int64()))
 		used, _ := onchain.PGas.Nonce(nil, common.Address(message.From), message.Nonce.ToBig())
 		if used {
+			log.Printf("message nonce already used: \"%#v\"\n", message)
 			return
 		}
 	}
 
-	time.Sleep(time.Second * time.Duration(big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Int64()))
+	sleep := big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig())
+	if sleep.IsInt64() {
+		log.Printf("message sleep time out of life: \"%#v\" %s\n", message, sleep.Text(16))
+		return
+	}
 
+	time.Sleep(time.Second * time.Duration(sleep.Int64()))
 	_, err = onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
-	for err != nil && big.NewInt(0).Add(message.Start.ToBig(), order.TxWindow).Cmp(utils.UnixBig()) == 1 {
+
+	for err != nil {
+		log.Printf("message execute: \"%#v\" %s\n", message, err.Error())
+
 		time.Sleep(time.Second)
+		if big.NewInt(0).Add(message.Start.ToBig(), order.TxWindow).Cmp(utils.UnixBig()) == -1 {
+			return
+		}
+
 		_, err = onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
 	}
+
+	log.Printf("message success execute: \"%#v\"\n", message)
 }

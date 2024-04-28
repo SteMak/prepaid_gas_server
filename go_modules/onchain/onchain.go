@@ -125,7 +125,7 @@ func connectTreasury(address common.Address) error {
 
 func configureTransactor(pkey *ecdsa.PrivateKey, gasfeecap, gastipcap *int64, chain_id uint64) error {
 	if Transactor, err = bind.NewKeyedTransactorWithChainID(pkey, big.NewInt(0).SetUint64(chain_id)); err != nil {
-		return err
+		return errors.New("onchain: transactor: " + err.Error())
 	}
 	if gasfeecap != nil {
 		Transactor.GasFeeCap = big.NewInt(*gasfeecap)

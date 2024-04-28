@@ -24,7 +24,7 @@ func (value Address) MarshalJSON() ([]byte, error) {
 func (target *Address) UnmarshalJSON(value []byte) error {
 	hexstr, err := strconv.Unquote(string(value))
 	if err != nil {
-		return err
+		return errors.New("address: unquote: " + err.Error())
 	}
 
 	if len(hexstr) >= 2 && hexstr[0:2] == "0x" {
@@ -36,7 +36,7 @@ func (target *Address) UnmarshalJSON(value []byte) error {
 
 	decoded, err := hex.DecodeString(string(hexstr))
 	if err != nil {
-		return err
+		return errors.New("address: decode hex: " + err.Error())
 	}
 
 	*target, err = WrapAddress(decoded)

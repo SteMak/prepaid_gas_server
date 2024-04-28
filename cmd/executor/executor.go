@@ -39,9 +39,9 @@ func main() {
 	}
 	defer db.DB.Close()
 
-	err = executor.Init(config.ExecutorAddress, config.PrevalidateDelay)
+	err = executor.Init(config.PGasAddress, config.ExecutorAddress, config.PrevalidateDelay)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
-	executor.Start(config.PGasAddress)
+	executor.Start()
 }

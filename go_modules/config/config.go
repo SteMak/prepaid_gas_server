@@ -100,7 +100,7 @@ func InitExecutor() error {
 
 func loadEnv() error {
 	if err = godotenv.Load(); err != nil {
-		return errors.New("config: environment load error: " + err.Error())
+		return errors.New("config: environment load: " + err.Error())
 	}
 
 	return nil
@@ -113,11 +113,11 @@ func loadPostgres() {
 
 func loadProvider(http, websocket bool) error {
 	if ProviderHTTP, err = url.Parse(os.Getenv("PROVIDER_HTTP")); http && err != nil {
-		return errors.New("config: provider load error: " + err.Error())
+		return errors.New("config: http provider load: " + err.Error())
 	}
 
 	if ProviderWS, err = url.Parse(os.Getenv("PROVIDER_WS")); websocket && err != nil {
-		return errors.New("config: provider load error: " + err.Error())
+		return errors.New("config: ws provider load: " + err.Error())
 	}
 
 	return nil
@@ -125,13 +125,13 @@ func loadProvider(http, websocket bool) error {
 
 func loadAddresses(pgas, treasury bool) error {
 	if address, err := hex.DecodeString(os.Getenv("PGAS_ADDRESS")); pgas && err != nil {
-		return errors.New("config: pgas address load error: " + err.Error())
+		return errors.New("config: pgas address load: " + err.Error())
 	} else {
 		PGasAddress = common.BytesToAddress(address)
 	}
 
 	if address, err := hex.DecodeString(os.Getenv("TREASURY_ADDRESS")); treasury && err != nil {
-		return errors.New("config: treasury address load error: " + err.Error())
+		return errors.New("config: treasury address load: " + err.Error())
 	} else {
 		TreasuryAddress = common.BytesToAddress(address)
 	}
@@ -141,25 +141,25 @@ func loadAddresses(pgas, treasury bool) error {
 
 func loadChainDetails(gasfeecap, gastipcap, chain_id, separator bool) error {
 	if num, err := strconv.ParseInt(os.Getenv("GAS_FEE_CAP"), 10, 64); gasfeecap && err != nil {
-		return errors.New("config: gas fee cap load error: " + err.Error())
+		return errors.New("config: gas fee cap load: " + err.Error())
 	} else if gasfeecap && num >= 0 {
 		GasFeeCap = &num
 	}
 
 	if num, err := strconv.ParseInt(os.Getenv("GAS_TIP_CAP"), 10, 64); gastipcap && err != nil {
-		return errors.New("config: gas tip cap load error: " + err.Error())
+		return errors.New("config: gas tip cap load: " + err.Error())
 	} else if gastipcap && num >= 0 {
 		GasTipCap = &num
 	}
 
 	if ChainID, err = strconv.ParseUint(os.Getenv("CHAIN_ID"), 10, 64); chain_id && err != nil {
-		return errors.New("config: chain id load error: " + err.Error())
+		return errors.New("config: chain id load: " + err.Error())
 	}
 
 	if hash, err := hex.DecodeString(os.Getenv("DOMAIN_SEPARATOR")); separator && err != nil {
-		return errors.New("config: domain separator load error: " + err.Error())
+		return errors.New("config: domain separator load: " + err.Error())
 	} else if err = DomainSeparator.Scan(hash); separator && err != nil {
-		return errors.New("config: domain separator load error: " + err.Error())
+		return errors.New("config: domain separator scan: " + err.Error())
 	}
 
 	return nil
@@ -167,15 +167,15 @@ func loadChainDetails(gasfeecap, gastipcap, chain_id, separator bool) error {
 
 func loadPkey(validator, executor bool) error {
 	if ValidatorPkey, err = crypto.HexToECDSA(os.Getenv("VALIDATOR_PKEY")); validator && err != nil {
-		return errors.New("config: validator pkey load error: " + err.Error())
+		return errors.New("config: validator pkey load: " + err.Error())
 	} else if _, err = crypto.Sign(crypto.Keccak256(), ValidatorPkey); validator && err != nil {
-		return errors.New("config: try sign error: " + err.Error())
+		return errors.New("config: try validator sign: " + err.Error())
 	}
 
 	if ExecutorPkey, err = crypto.HexToECDSA(os.Getenv("EXECUTOR_PKEY")); executor && err != nil {
-		return errors.New("config: executor pkey load error: " + err.Error())
+		return errors.New("config: executor pkey load: " + err.Error())
 	} else if _, err = crypto.Sign(crypto.Keccak256(), ExecutorPkey); executor && err != nil {
-		return errors.New("config: try sign error: " + err.Error())
+		return errors.New("config: try executor sign: " + err.Error())
 	}
 
 	ExecutorAddress = crypto.PubkeyToAddress(ExecutorPkey.PublicKey)
@@ -185,13 +185,13 @@ func loadPkey(validator, executor bool) error {
 
 func loadDelays(v_start_delay, x_check_delay bool) error {
 	if num, err := strconv.ParseUint(os.Getenv("MIN_START_DELAY"), 10, 32); v_start_delay && err != nil {
-		return errors.New("config: min start delay load error: " + err.Error())
+		return errors.New("config: min start delay load: " + err.Error())
 	} else {
 		MinStartDelay = uint32(num)
 	}
 
 	if num, err := strconv.ParseUint(os.Getenv("PREVALIDATE_DELAY"), 10, 32); x_check_delay && err != nil {
-		return errors.New("config: prevalidate delay load error: " + err.Error())
+		return errors.New("config: prevalidate delay load: " + err.Error())
 	} else {
 		PrevalidateDelay = uint32(num)
 	}
@@ -201,7 +201,7 @@ func loadDelays(v_start_delay, x_check_delay bool) error {
 
 func loadHTTP(validator_port bool) error {
 	if num, err := strconv.ParseUint(os.Getenv("VALIDATOR_PORT"), 10, 16); validator_port && err != nil {
-		return errors.New("config: validator port load error: " + err.Error())
+		return errors.New("config: validator port load: " + err.Error())
 	} else {
 		ValidatorPort = uint16(num)
 	}

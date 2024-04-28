@@ -2,7 +2,7 @@ package executor
 
 import (
 	"context"
-	"encoding/hex"
+	"errors"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -16,12 +16,16 @@ import (
 var (
 	orders = make(map[string]*pgas.Order)
 	offset uint64
-	delay  uint32
 
 	err error
 )
 
-func Init(executor common.Address, prevalidate_delay uint32) error {
+func Init(pgas_address, executor common.Address, prevalidate_delay uint32) error {
+	initMonitor(prevalidate_delay)
+	if err = initAcceptor(pgas_address); err != nil {
+		return err
+	}
+
 	if err = FillOrders(executor); err != nil {
 		return err
 	}
@@ -29,20 +33,18 @@ func Init(executor common.Address, prevalidate_delay uint32) error {
 		return err
 	}
 
-	delay = prevalidate_delay
-
 	return nil
 }
 
-func Start(pgas_address common.Address) {
-	go monitorMessages()
-	acceptor(pgas_address)
+func Start() {
+	go monitor()
+	acceptor()
 }
 
 func FillOrders(executor common.Address) error {
 	number, err := onchain.ClientHTTP.BlockNumber(context.Background())
 	if err != nil {
-		return err
+		return errors.New("executor: block number: " + err.Error())
 	}
 
 	opts := &bind.CallOpts{BlockNumber: big.NewInt(0).SetUint64(number)}
@@ -53,12 +55,12 @@ func FillOrders(executor common.Address) error {
 		if result, err := onchain.PGas.GetExecutorOrders(
 			opts, executor, true, big.NewInt(limit), big.NewInt(offset),
 		); err != nil {
-			return err
+			return errors.New("executor: onchain orders query: " + err.Error())
 		} else {
 			for _, item := range result {
 				var id structs.Uint256
 				id.Scan(item.Id.Bytes())
-				orders[hex.EncodeToString(id[:])] = &item.Order
+				orders[id.ToString()] = &item.Order
 			}
 
 			if int64(len(result)) < limit {
@@ -78,7 +80,7 @@ func FillMessages() error {
 	for {
 		result, err := db.GetMessages(false, limit, 100)
 		if err != nil {
-			return err
+			return errors.New("executor: db messages query: " + err.Error())
 		}
 
 		for _, item := range result {

@@ -10,13 +10,13 @@ import (
 
 func ValidateOffchain(message structs.Message, min_delay uint32) error {
 	if start, err := message.Start.ToUint32(); err != nil {
-		return err
+		return errors.New("message: message start parse: " + err.Error())
 	} else if int64(start) <= time.Now().Unix()+int64(min_delay) {
 		return errors.New("message: message provided lately")
 	}
 
 	if err = message.From.NotZero(); err != nil {
-		return err
+		return errors.New("message: message from zero: " + err.Error())
 	}
 
 	return nil

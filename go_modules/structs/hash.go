@@ -26,7 +26,7 @@ func (target *Hash) Scan(value interface{}) error {
 func (digest Hash) Sign(pkey *ecdsa.PrivateKey) (Signature, error) {
 	valid_sign, err := crypto.Sign(digest[:], pkey)
 	if err != nil {
-		return Signature{}, err
+		return Signature{}, errors.New("hash: sign: " + err.Error())
 	}
 
 	return WrapSignature(valid_sign)
@@ -35,12 +35,12 @@ func (digest Hash) Sign(pkey *ecdsa.PrivateKey) (Signature, error) {
 func (digest Hash) Verify(sign Signature, signer Address) error {
 	recovered_pubkey_bytes, err := crypto.Ecrecover(digest[:], sign[:])
 	if err != nil {
-		return err
+		return errors.New("hash: ecrecover: " + err.Error())
 	}
 
 	recovered_pubkey, err := crypto.UnmarshalPubkey(recovered_pubkey_bytes)
 	if err != nil {
-		return err
+		return errors.New("hash: unmarshal pkey: " + err.Error())
 	}
 
 	recovered := crypto.PubkeyToAddress(*recovered_pubkey)
