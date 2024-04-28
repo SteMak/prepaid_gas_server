@@ -24,7 +24,7 @@ func monitor() {
 	for {
 		result, err := db.GetMessages(false, offset, 1000)
 		if err != nil {
-			log.Printf("monitor db: %s\n", err.Error())
+			log.Printf("monitor db: %s\n\n", err.Error())
 			time.Sleep(time.Second)
 			continue
 		}
@@ -42,13 +42,13 @@ func monitor() {
 func planMessage(message structs.Message, sign structs.Signature) {
 	order := orders[message.Order.ToString()]
 	if order == nil {
-		log.Printf("message order not promised: \"%#v\"\n", message)
+		log.Printf("message order not promised: \"%#v\"\n\n", message)
 		return
 	}
 
 	// start + window < now
 	if big.NewInt(0).Add(message.Start.ToBig(), order.TxWindow).Cmp(utils.UnixBig()) == -1 {
-		log.Printf("message in past: \"%#v\"\n", message)
+		log.Printf("message in past: \"%#v\"\n\n", message)
 		return
 	}
 
@@ -56,32 +56,32 @@ func planMessage(message structs.Message, sign structs.Signature) {
 	if big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()).Cmp(delay) == 1 {
 		sleep := big.NewInt(0).Sub(big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig()), delay)
 		if !sleep.IsInt64() {
-			log.Printf("message sleep time out of life: \"%#v\" %s\n", message, sleep.Text(16))
+			log.Printf("message sleep time out of life: \"%#v\" %s\n\n", message, sleep.Text(16))
 			return
 		}
 
-		log.Printf("message nonce check planned: \"%#v\"\n", message)
+		log.Printf("message nonce check planned: \"%#v\"\n\n", message)
 		time.Sleep(time.Second * time.Duration(sleep.Int64()))
 
 		used, _ := onchain.PGas.Nonce(nil, common.Address(message.From), message.Nonce.ToBig())
 		if used {
-			log.Printf("message nonce already used: \"%#v\"\n", message)
+			log.Printf("message nonce already used: \"%#v\"\n\n", message)
 			return
 		}
 	}
 
 	sleep := big.NewInt(0).Sub(message.Start.ToBig(), utils.UnixBig())
 	if !sleep.IsInt64() {
-		log.Printf("message sleep time out of life: \"%#v\" %s\n", message, sleep.Text(16))
+		log.Printf("message sleep time out of life: \"%#v\" %s\n\n", message, sleep.Text(16))
 		return
 	}
 
-	log.Printf("message planned: \"%#v\"\n", message)
+	log.Printf("message planned: \"%#v\"\n\n", message)
 	time.Sleep(time.Second * time.Duration(sleep.Int64()))
 
 	_, err := onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
 	for err != nil {
-		log.Printf("message execute: \"%#v\" %s\n", message, err.Error())
+		log.Printf("message execute: \"%#v\" %s\n\n", message, err.Error())
 
 		time.Sleep(time.Second)
 		if big.NewInt(0).Add(message.Start.ToBig(), order.TxWindow).Cmp(utils.UnixBig()) == -1 {
@@ -91,5 +91,5 @@ func planMessage(message structs.Message, sign structs.Signature) {
 		_, err = onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
 	}
 
-	log.Printf("message success execute: \"%#v\"\n", message)
+	log.Printf("message success execute: \"%#v\"\n\n", message)
 }

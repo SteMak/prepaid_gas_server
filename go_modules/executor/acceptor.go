@@ -45,7 +45,7 @@ func acceptor() {
 		select {
 		case err := <-subscription.Err():
 			for err != nil {
-				log.Printf("subscription: %s\n", err.Error())
+				log.Printf("subscription: %s\n\n", err.Error())
 				time.Sleep(time.Second)
 
 				subscription, err = onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events)
@@ -53,13 +53,13 @@ func acceptor() {
 		case event := <-events:
 			order, err := onchain.WrapPGasOrder(event.Data)
 			if err != nil {
-				log.Printf("event data not order: \"%#v\": %s\n", event, err.Error())
+				log.Printf("event data not order: \"%#v\": %s\n\n", event, err.Error())
 				continue
 			}
 
 			id, err := structs.WrapUint256(event.Topics[1][:])
 			if err != nil {
-				log.Printf("event topic not id: \"%#v\": %s\n", event, err.Error())
+				log.Printf("event topic not id: \"%#v\": %s\n\n", event, err.Error())
 				continue
 			}
 
@@ -70,14 +70,14 @@ func acceptor() {
 
 func planOrder(id structs.Uint256, order pgas.Order) {
 	if orders[id.ToString()] != nil {
-		log.Printf("order exists: %s\n", id.ToString())
+		log.Printf("order exists: %s\n\n", id.ToString())
 		return
 	}
 
 	orders[id.ToString()] = &order
 
 	if utils.IsOrderRisky(id, order) {
-		log.Printf("order risky: %s\n", id.ToString())
+		log.Printf("order risky: %s\n\n", id.ToString())
 		return
 	}
 
@@ -85,9 +85,9 @@ func planOrder(id structs.Uint256, order pgas.Order) {
 	if err != nil {
 		orders[id.ToString()] = nil
 
-		log.Printf("order accept: %s: %s\n", id.ToString(), err.Error())
+		log.Printf("order accept: %s: %s\n\n", id.ToString(), err.Error())
 		return
 	}
 
-	log.Printf("order accept success: %s\n", id.ToString())
+	log.Printf("order accept success: %s\n\n", id.ToString())
 }

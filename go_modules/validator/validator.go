@@ -33,7 +33,7 @@ func Init(start_delay uint32, domain_separator structs.Hash, validator_key *ecds
 func Start(port uint16) {
 	for {
 		if err := http.ListenAndServe(":"+strconv.FormatUint(uint64(port), 10), nil); err != nil {
-			log.Printf("listen and serve: %s\n", err.Error())
+			log.Printf("listen and serve: %s\n\n", err.Error())
 		}
 
 		time.Sleep(time.Second)
@@ -48,7 +48,7 @@ func load(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "parsing offset: "+err.Error())
 
-		log.Printf("\"%s\" parsing offset: %s\n", r.URL.String(), err.Error())
+		log.Printf("\"%s\" parsing offset: %s\n\n", r.URL.String(), err.Error())
 		return
 	}
 
@@ -57,7 +57,7 @@ func load(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "parsing reverse: "+err.Error())
 
-		log.Printf("\"%s\" parsing reverse: %s\n", r.URL.String(), err.Error())
+		log.Printf("\"%s\" parsing reverse: %s\n\n", r.URL.String(), err.Error())
 		return
 	}
 
@@ -66,7 +66,7 @@ func load(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		io.WriteString(w, "db query: "+err.Error())
 
-		log.Printf("\"%s\" db query: %s\n", r.URL.String(), err.Error())
+		log.Printf("\"%s\" db query: %s\n\n", r.URL.String(), err.Error())
 		return
 	}
 
@@ -75,7 +75,7 @@ func load(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		io.WriteString(w, "reply marchal: "+err.Error())
 
-		log.Printf("\"%s\" reply marchal: %s\n", r.URL.String(), err.Error())
+		log.Printf("\"%s\" reply marchal: %s\n\n", r.URL.String(), err.Error())
 		return
 	}
 
@@ -91,7 +91,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "parsing body: "+err.Error())
 
-		log.Printf("\"%s\" parsing body: %s\n", r.URL.String(), err)
+		log.Printf("\"%s\" parsing body: %s\n\n", r.URL.String(), err)
 		return
 	}
 
@@ -99,7 +99,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "offchain validation: "+err.Error())
 
-		log.Printf("\"%s\" offchain validation: \"%#v\": %s\n", r.URL.String(), request, err)
+		log.Printf("\"%s\" offchain validation: \"%#v\": %s\n\n", r.URL.String(), request, err)
 		return
 	}
 
@@ -108,7 +108,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		io.WriteString(w, "digest hash: "+err.Error())
 
-		log.Printf("\"%s\" digest hash: \"%#v\": %s\n", r.URL.String(), request, err)
+		log.Printf("\"%s\" digest hash: \"%#v\": %s\n\n", r.URL.String(), request, err)
 		return
 	}
 
@@ -116,7 +116,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "bad signature: "+err.Error())
 
-		log.Printf("\"%s\" bad signature: \"%#v\": %s\n", r.URL.String(), request, err)
+		log.Printf("\"%s\" bad signature: \"%#v\": %s\n\n", r.URL.String(), request, err)
 		return
 	}
 
@@ -124,7 +124,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "onchain validation: "+err.Error())
 
-		log.Printf("\"%s\" onchain validation: \"%#v\": %s\n", r.URL.String(), request, err)
+		log.Printf("\"%s\" onchain validation: \"%#v\": %s\n\n", r.URL.String(), request, err)
 		return
 	}
 
@@ -133,7 +133,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		io.WriteString(w, "reply signature: "+err.Error())
 
-		log.Printf("\"%s\" reply signature: \"%#v\": %s\n", r.URL.String(), request, err)
+		log.Printf("\"%s\" reply signature: \"%#v\": %s\n\n", r.URL.String(), request, err)
 		return
 	}
 
@@ -142,10 +142,10 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		io.WriteString(w, "db insert: "+err.Error())
 
-		log.Printf("\"%s\" db insert: \"%#v\": %s\n", r.URL.String(), db_message, err)
+		log.Printf("\"%s\" db insert: \"%#v\": %s\n\n", r.URL.String(), db_message, err)
 		return
 	}
 
 	io.WriteString(w, hex.EncodeToString(valid_sign[:]))
-	log.Printf("\"%s\" success: \"%#v\"\n", r.URL.String(), db_message)
+	log.Printf("\"%s\" success: \"%#v\"\n\n", r.URL.String(), db_message)
 }
