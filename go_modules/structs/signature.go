@@ -47,7 +47,9 @@ func (target *Signature) UnmarshalJSON(value []byte) error {
 }
 
 func (target *Signature) Scan(value interface{}) error {
+	var err error
 	*target, err = WrapSignature(value.([]byte))
+
 	return err
 }
 

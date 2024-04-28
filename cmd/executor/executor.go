@@ -9,17 +9,12 @@ import (
 	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain"
 )
 
-var (
-	err error
-)
-
 func main() {
-	err = config.InitExecutor()
-	if err != nil {
+	if err := config.InitExecutor(); err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	err = onchain.InitExecutor(
+	if err := onchain.InitExecutor(
 		config.ProviderHTTP,
 		config.ProviderWS,
 		config.PGasAddress,
@@ -28,19 +23,16 @@ func main() {
 		config.GasFeeCap,
 		config.GasTipCap,
 		config.ChainID,
-	)
-	if err != nil {
+	); err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	err = db.Init(config.PostgresUser, config.PostgresPassword)
-	if err != nil {
+	if err := db.Init(config.PostgresUser, config.PostgresPassword); err != nil {
 		log.Fatalln(err.Error())
 	}
 	defer db.DB.Close()
 
-	err = executor.Init(config.PGasAddress, config.ExecutorAddress, config.PrevalidateDelay)
-	if err != nil {
+	if err := executor.Init(config.PGasAddress, config.ExecutorAddress, config.PrevalidateDelay); err != nil {
 		log.Fatalln(err.Error())
 	}
 	executor.Start()

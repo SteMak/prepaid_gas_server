@@ -19,8 +19,6 @@ var (
 	delay     uint32
 	separator structs.Hash
 	key       *ecdsa.PrivateKey
-
-	err error
 )
 
 func Init(start_delay uint32, domain_separator structs.Hash, validator_key *ecdsa.PrivateKey) {
@@ -34,7 +32,7 @@ func Init(start_delay uint32, domain_separator structs.Hash, validator_key *ecds
 
 func Start(port uint16) {
 	for {
-		if err = http.ListenAndServe(":"+strconv.FormatUint(uint64(port), 10), nil); err != nil {
+		if err := http.ListenAndServe(":"+strconv.FormatUint(uint64(port), 10), nil); err != nil {
 			log.Printf("listen and serve: %s\n", err.Error())
 		}
 
@@ -89,8 +87,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 
 	var request structs.HTTPValidateRequest
 
-	err = json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "parsing body: "+err.Error())
 
@@ -98,8 +95,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utils.ValidateOffchain(request.Message, delay)
-	if err != nil {
+	if err := utils.ValidateOffchain(request.Message, delay); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "offchain validation: "+err.Error())
 
@@ -116,8 +112,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = digest.Verify(request.OrigSign, request.Message.From)
-	if err != nil {
+	if err := digest.Verify(request.OrigSign, request.Message.From); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "bad signature: "+err.Error())
 
@@ -125,8 +120,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = utils.ValidateOnchain(request.Message)
-	if err != nil {
+	if err := utils.ValidateOnchain(request.Message); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		io.WriteString(w, "onchain validation: "+err.Error())
 
@@ -144,8 +138,7 @@ func validate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	db_message := structs.WrapDBMessage(request.Message, request.OrigSign, valid_sign)
-	err = db.InsertMessage(db_message)
-	if err != nil {
+	if err := db.InsertMessage(db_message); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		io.WriteString(w, "db insert: "+err.Error())
 

@@ -26,15 +26,17 @@ var (
 )
 
 func initAcceptor(pgas_address common.Address) error {
-	query := ethereum.FilterQuery{
+	query = ethereum.FilterQuery{
 		Addresses: []common.Address{pgas_address},
 		Topics: [][]common.Hash{{common.BytesToHash(crypto.Keccak256([]byte(
 			"OrderCreate(uint256,(address,uint256,uint256,uint256,uint256,uint256,uint256,(address,uint256),(address,uint256)))",
 		)))}},
 	}
 
-	if subscription, err = onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events); err != nil {
+	if sub, err := onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events); err != nil {
 		return errors.New("subscription: " + err.Error())
+	} else {
+		subscription = sub
 	}
 
 	return nil
@@ -43,7 +45,7 @@ func initAcceptor(pgas_address common.Address) error {
 func acceptor() {
 	for {
 		select {
-		case err = <-subscription.Err():
+		case err := <-subscription.Err():
 			for err != nil {
 				log.Printf("subscription: %s\n", err.Error())
 				time.Sleep(time.Second)
@@ -81,7 +83,7 @@ func planOrder(id structs.Uint256, order pgas.Order) {
 		return
 	}
 
-	_, err = onchain.Treasury.OrderAccept(onchain.Transactor, id.ToBig())
+	_, err := onchain.Treasury.OrderAccept(onchain.Transactor, id.ToBig())
 	if err != nil {
 		orders[id.ToString()] = nil
 

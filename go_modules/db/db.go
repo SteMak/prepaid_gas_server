@@ -17,8 +17,6 @@ import (
 
 var (
 	DB *sqlx.DB
-
-	err error
 )
 
 func Init(user string, password string) error {
@@ -26,11 +24,13 @@ func Init(user string, password string) error {
 		"user=%s password=%s dbname=postgres sslmode=disable",
 		user, password,
 	)
-	if DB, err = sqlx.Connect("postgres", connect); err != nil {
+	if db, err := sqlx.Connect("postgres", connect); err != nil {
 		return errors.New("db: connection error: " + err.Error())
+	} else {
+		DB = db
 	}
 
-	if err = InitMessages(); err != nil {
+	if err := InitMessages(); err != nil {
 		return err
 	}
 
@@ -40,7 +40,7 @@ func Init(user string, password string) error {
 func InitMessages() error {
 	if sql, err := os.ReadFile(filepath.Join("sql", "messages.up.sql")); err != nil {
 		return errors.New("db: messages up script read error: " + err.Error())
-	} else if _, err = DB.Exec(string(sql)); err != nil {
+	} else if _, err := DB.Exec(string(sql)); err != nil {
 		return errors.New("db: messages up script execution error: " + err.Error())
 	}
 
@@ -89,7 +89,7 @@ func GetMessagesByOrder(order structs.Uint256, offset uint64, limit uint64) ([]s
 }
 
 func InsertMessage(message structs.DBMessage) error {
-	_, err = DB.Exec(`insert into messages
+	_, err := DB.Exec(`insert into messages
 		values(
 			decode($1, 'hex'),
 			decode($2, 'hex'),

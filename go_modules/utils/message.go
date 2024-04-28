@@ -15,7 +15,7 @@ func ValidateOffchain(message structs.Message, min_delay uint32) error {
 		return errors.New("message: message provided lately")
 	}
 
-	if err = message.From.NotZero(); err != nil {
+	if err := message.From.NotZero(); err != nil {
 		return errors.New("message: message from zero: " + err.Error())
 	}
 

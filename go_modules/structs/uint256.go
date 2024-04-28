@@ -54,8 +54,9 @@ func (target *Uint256) Scan(value interface{}) error {
 		return errors.New("uint256: invalid length")
 	}
 
+	var err error
 	*target, err = WrapUint256(bytes.Join([][]byte{
-		pad[0 : 32-len],
+		pad[:32-len],
 		value.([]byte),
 	}, []byte{}))
 
@@ -73,8 +74,7 @@ func (uint256 Uint256) IsUint32() error {
 }
 
 func (uint256 Uint256) ToUint32() (uint32, error) {
-	err = uint256.IsUint32()
-	if err != nil {
+	if err := uint256.IsUint32(); err != nil {
 		return 0, err
 	}
 

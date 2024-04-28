@@ -9,23 +9,16 @@ import (
 	"github.com/prepaidGas/prepaidgas-server/go_modules/validator"
 )
 
-var (
-	err error
-)
-
 func main() {
-	err = config.InitValidator()
-	if err != nil {
+	if err := config.InitValidator(); err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	err = onchain.InitValidator(config.ProviderHTTP, config.PGasAddress, config.DomainSeparator)
-	if err != nil {
+	if err := onchain.InitValidator(config.ProviderHTTP, config.PGasAddress, config.DomainSeparator); err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	err = db.Init(config.PostgresUser, config.PostgresPassword)
-	if err != nil {
+	if err := db.Init(config.PostgresUser, config.PostgresPassword); err != nil {
 		log.Fatalln(err.Error())
 	}
 	defer db.DB.Close()

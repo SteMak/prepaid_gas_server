@@ -38,32 +38,30 @@ var (
 	PrevalidateDelay uint32
 
 	ValidatorPort uint16
-
-	err error
 )
 
 func InitValidator() error {
-	if err = loadEnv(); err != nil {
+	if err := loadEnv(); err != nil {
 		return err
 	}
 
 	loadPostgres()
-	if err = loadProvider(true, false); err != nil {
+	if err := loadProvider(true, false); err != nil {
 		return err
 	}
-	if err = loadAddresses(true, false); err != nil {
+	if err := loadAddresses(true, false); err != nil {
 		return err
 	}
-	if err = loadChainDetails(false, false, false, true); err != nil {
+	if err := loadChainDetails(false, false, false, true); err != nil {
 		return err
 	}
-	if err = loadPkey(true, false); err != nil {
+	if err := loadPkey(true, false); err != nil {
 		return err
 	}
-	if err = loadDelays(true, false); err != nil {
+	if err := loadDelays(true, false); err != nil {
 		return err
 	}
-	if err = loadHTTP(true); err != nil {
+	if err := loadHTTP(true); err != nil {
 		return err
 	}
 
@@ -71,27 +69,27 @@ func InitValidator() error {
 }
 
 func InitExecutor() error {
-	if err = loadEnv(); err != nil {
+	if err := loadEnv(); err != nil {
 		return err
 	}
 
 	loadPostgres()
-	if err = loadProvider(true, true); err != nil {
+	if err := loadProvider(true, true); err != nil {
 		return err
 	}
-	if err = loadAddresses(true, true); err != nil {
+	if err := loadAddresses(true, true); err != nil {
 		return err
 	}
-	if err = loadChainDetails(true, true, true, false); err != nil {
+	if err := loadChainDetails(true, true, true, false); err != nil {
 		return err
 	}
-	if err = loadPkey(false, true); err != nil {
+	if err := loadPkey(false, true); err != nil {
 		return err
 	}
-	if err = loadDelays(false, true); err != nil {
+	if err := loadDelays(false, true); err != nil {
 		return err
 	}
-	if err = loadHTTP(false); err != nil {
+	if err := loadHTTP(false); err != nil {
 		return err
 	}
 
@@ -99,7 +97,7 @@ func InitExecutor() error {
 }
 
 func loadEnv() error {
-	if err = godotenv.Load(); err != nil {
+	if err := godotenv.Load(); err != nil {
 		return errors.New("config: environment load: " + err.Error())
 	}
 
@@ -112,12 +110,16 @@ func loadPostgres() {
 }
 
 func loadProvider(http, websocket bool) error {
-	if ProviderHTTP, err = url.Parse(os.Getenv("PROVIDER_HTTP")); http && err != nil {
+	if link, err := url.Parse(os.Getenv("PROVIDER_HTTP")); http && err != nil {
 		return errors.New("config: http provider load: " + err.Error())
+	} else if http {
+		ProviderHTTP = link
 	}
 
-	if ProviderWS, err = url.Parse(os.Getenv("PROVIDER_WS")); websocket && err != nil {
+	if link, err := url.Parse(os.Getenv("PROVIDER_WS")); websocket && err != nil {
 		return errors.New("config: ws provider load: " + err.Error())
+	} else if websocket {
+		ProviderWS = link
 	}
 
 	return nil
@@ -126,13 +128,13 @@ func loadProvider(http, websocket bool) error {
 func loadAddresses(pgas, treasury bool) error {
 	if address, err := hex.DecodeString(os.Getenv("PGAS_ADDRESS")); pgas && err != nil {
 		return errors.New("config: pgas address load: " + err.Error())
-	} else {
+	} else if pgas {
 		PGasAddress = common.BytesToAddress(address)
 	}
 
 	if address, err := hex.DecodeString(os.Getenv("TREASURY_ADDRESS")); treasury && err != nil {
 		return errors.New("config: treasury address load: " + err.Error())
-	} else {
+	} else if treasury {
 		TreasuryAddress = common.BytesToAddress(address)
 	}
 
@@ -152,13 +154,15 @@ func loadChainDetails(gasfeecap, gastipcap, chain_id, separator bool) error {
 		GasTipCap = &num
 	}
 
-	if ChainID, err = strconv.ParseUint(os.Getenv("CHAIN_ID"), 10, 64); chain_id && err != nil {
+	if num, err := strconv.ParseUint(os.Getenv("CHAIN_ID"), 10, 64); chain_id && err != nil {
 		return errors.New("config: chain id load: " + err.Error())
+	} else if chain_id {
+		ChainID = num
 	}
 
 	if hash, err := hex.DecodeString(os.Getenv("DOMAIN_SEPARATOR")); separator && err != nil {
 		return errors.New("config: domain separator load: " + err.Error())
-	} else if err = DomainSeparator.Scan(hash); separator && err != nil {
+	} else if err := DomainSeparator.Scan(hash); separator && err != nil {
 		return errors.New("config: domain separator scan: " + err.Error())
 	}
 
@@ -166,16 +170,20 @@ func loadChainDetails(gasfeecap, gastipcap, chain_id, separator bool) error {
 }
 
 func loadPkey(validator, executor bool) error {
-	if ValidatorPkey, err = crypto.HexToECDSA(os.Getenv("VALIDATOR_PKEY")); validator && err != nil {
+	if pkey, err := crypto.HexToECDSA(os.Getenv("VALIDATOR_PKEY")); validator && err != nil {
 		return errors.New("config: validator pkey load: " + err.Error())
-	} else if _, err = crypto.Sign(crypto.Keccak256(), ValidatorPkey); validator && err != nil {
+	} else if _, err := crypto.Sign(crypto.Keccak256(), pkey); validator && err != nil {
 		return errors.New("config: try validator sign: " + err.Error())
+	} else if validator {
+		ValidatorPkey = pkey
 	}
 
-	if ExecutorPkey, err = crypto.HexToECDSA(os.Getenv("EXECUTOR_PKEY")); executor && err != nil {
+	if pkey, err := crypto.HexToECDSA(os.Getenv("EXECUTOR_PKEY")); executor && err != nil {
 		return errors.New("config: executor pkey load: " + err.Error())
-	} else if _, err = crypto.Sign(crypto.Keccak256(), ExecutorPkey); executor && err != nil {
+	} else if _, err := crypto.Sign(crypto.Keccak256(), pkey); executor && err != nil {
 		return errors.New("config: try executor sign: " + err.Error())
+	} else if executor {
+		ExecutorPkey = pkey
 	}
 
 	ExecutorAddress = crypto.PubkeyToAddress(ExecutorPkey.PublicKey)

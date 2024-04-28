@@ -75,7 +75,7 @@ func planMessage(message structs.Message, sign structs.Signature) {
 	}
 
 	time.Sleep(time.Second * time.Duration(sleep.Int64()))
-	_, err = onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
+	_, err := onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
 
 	for err != nil {
 		log.Printf("message execute: \"%#v\" %s\n", message, err.Error())

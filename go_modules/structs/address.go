@@ -44,7 +44,9 @@ func (target *Address) UnmarshalJSON(value []byte) error {
 }
 
 func (target *Address) Scan(value interface{}) error {
+	var err error
 	*target, err = WrapAddress(value.([]byte))
+
 	return err
 }
 

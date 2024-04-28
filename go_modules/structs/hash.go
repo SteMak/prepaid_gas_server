@@ -19,7 +19,9 @@ func WrapHash(value []byte) (Hash, error) {
 }
 
 func (target *Hash) Scan(value interface{}) error {
+	var err error
 	*target, err = WrapHash(value.([]byte))
+
 	return err
 }
 

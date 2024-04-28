@@ -16,20 +16,18 @@ import (
 var (
 	orders = make(map[string]*pgas.Order)
 	offset uint64
-
-	err error
 )
 
 func Init(pgas_address, executor common.Address, prevalidate_delay uint32) error {
 	initMonitor(prevalidate_delay)
-	if err = initAcceptor(pgas_address); err != nil {
+	if err := initAcceptor(pgas_address); err != nil {
 		return err
 	}
 
-	if err = FillOrders(executor); err != nil {
+	if err := FillOrders(executor); err != nil {
 		return err
 	}
-	if err = FillMessages(); err != nil {
+	if err := FillMessages(); err != nil {
 		return err
 	}
 
