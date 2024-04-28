@@ -184,9 +184,8 @@ func loadPkey(validator, executor bool) error {
 		return errors.New("config: try executor sign: " + err.Error())
 	} else if executor {
 		ExecutorPkey = pkey
+		ExecutorAddress = crypto.PubkeyToAddress(ExecutorPkey.PublicKey)
 	}
-
-	ExecutorAddress = crypto.PubkeyToAddress(ExecutorPkey.PublicKey)
 
 	return nil
 }
