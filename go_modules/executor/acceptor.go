@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log"
-	"math/big"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -12,7 +11,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/prepaidGas/prepaidgas-server/go_modules/db"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/onchain/pgas"
 	"github.com/prepaidGas/prepaidgas-server/go_modules/structs"
@@ -78,7 +76,7 @@ func planOrder(id structs.Uint256, order pgas.Order) {
 
 	orders[id.ToString()] = &order
 
-	if isOrderRisky(id, order) {
+	if utils.IsOrderRisky(id, order) {
 		log.Printf("order risky: %s\n", id.ToString())
 		return
 	}
@@ -92,23 +90,4 @@ func planOrder(id structs.Uint256, order pgas.Order) {
 	}
 
 	log.Printf("order accept success: %s\n", id.ToString())
-}
-
-func isOrderRisky(id structs.Uint256, order pgas.Order) bool {
-	messages, err := db.GetMessagesByOrder(id, 0, 1)
-	if err != nil || uint64(len(messages)) > 0 {
-		return true
-	}
-
-	if order.GasGuarantee.PerUnit.Cmp(big.NewInt(0)) == 0 {
-		return false
-	}
-
-	if order.GasGuarantee.PerUnit.Cmp(big.NewInt(100001)) == -1 &&
-		order.Gas.Cmp(big.NewInt(1000001)) == -1 &&
-		big.NewInt(0).Add(utils.UnixBig(), big.NewInt(60*60*30)).Cmp(order.End) == 1 {
-		return false
-	}
-
-	return true
 }

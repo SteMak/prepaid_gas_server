@@ -19,7 +19,7 @@ var (
 	DB *sqlx.DB
 )
 
-func Init(user string, password string) error {
+func Init(user, password string) error {
 	connect := fmt.Sprintf(
 		"user=%s password=%s dbname=postgres sslmode=disable",
 		user, password,
@@ -47,7 +47,7 @@ func InitMessages() error {
 	return nil
 }
 
-func GetMessages(reverse bool, offset uint64, limit uint64) ([]structs.DBMessage, error) {
+func GetMessages(reverse bool, offset, limit uint64) ([]structs.DBMessage, error) {
 	messages := []structs.DBMessage{}
 
 	order := "asc"
@@ -62,15 +62,14 @@ func GetMessages(reverse bool, offset uint64, limit uint64) ([]structs.DBMessage
 		strconv.FormatUint(offset, 10),
 	)
 
-	err := DB.Select(&messages, script)
-	if err != nil {
+	if err := DB.Select(&messages, script); err != nil {
 		return messages, errors.New("db: get messages: " + err.Error())
 	}
 
 	return messages, nil
 }
 
-func GetMessagesByOrder(order structs.Uint256, offset uint64, limit uint64) ([]structs.DBMessage, error) {
+func GetMessagesByOrder(order structs.Uint256, offset, limit uint64) ([]structs.DBMessage, error) {
 	messages := []structs.DBMessage{}
 
 	script := fmt.Sprintf(
@@ -80,8 +79,7 @@ func GetMessagesByOrder(order structs.Uint256, offset uint64, limit uint64) ([]s
 		strconv.FormatUint(offset, 10),
 	)
 
-	err := DB.Select(&messages, script)
-	if err != nil {
+	if err := DB.Select(&messages, script); err != nil {
 		return messages, errors.New("db: get messages by order: " + err.Error())
 	}
 

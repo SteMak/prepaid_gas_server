@@ -61,13 +61,10 @@ func InitValidator(provider *url.URL, pgas_address common.Address, expected_sepa
 }
 
 func InitExecutor(
-	provider_http *url.URL,
-	provider_ws *url.URL,
-	pgas_address common.Address,
-	treasury_address common.Address,
+	provider_http, provider_ws *url.URL,
+	pgas_address, treasury_address common.Address,
 	pkey *ecdsa.PrivateKey,
-	gasfeecap *int64,
-	gastipcap *int64,
+	gasfeecap, gastipcap *int64,
 	chain_id uint64,
 ) error {
 	if err := dialProviderWS(provider_ws); err != nil {
@@ -147,50 +144,11 @@ func configureTransactor(pkey *ecdsa.PrivateKey, gasfeecap, gastipcap *int64, ch
 }
 
 func validateSeparator(expected_separator structs.Hash) error {
-	separator, err := PGas.DomainSeparator(nil)
-	if err != nil {
+	if separator, err := PGas.DomainSeparator(nil); err != nil {
 		return errors.New("onchain: SC query error: " + err.Error())
-	}
-
-	if separator != expected_separator {
+	} else if separator != expected_separator {
 		return errors.New("onchain: domain separator mismatch")
 	}
 
 	return nil
-}
-
-func WrapPGasMessage(message structs.Message) pgas.Message {
-	return pgas.Message{
-		From:  common.Address(message.From),
-		Nonce: message.Nonce.ToBig(),
-		Order: message.Order.ToBig(),
-		Start: message.Start.ToBig(),
-		To:    common.Address(message.To),
-		Gas:   message.Gas.ToBig(),
-		Data:  message.Data,
-	}
-}
-
-func WrapPGasOrder(data []byte) (pgas.Order, error) {
-	if len(data) != 352 {
-		return pgas.Order{}, errors.New("onchain: incorrect data length")
-	}
-
-	return pgas.Order{
-		Manager:      common.BytesToAddress(data[0:32]),
-		Gas:          big.NewInt(0).SetBytes(data[32:64]),
-		Expire:       big.NewInt(0).SetBytes(data[64:96]),
-		Start:        big.NewInt(0).SetBytes(data[96:128]),
-		End:          big.NewInt(0).SetBytes(data[128:160]),
-		TxWindow:     big.NewInt(0).SetBytes(data[160:192]),
-		RedeemWindow: big.NewInt(0).SetBytes(data[192:224]),
-		GasPrice: pgas.GasPayment{
-			Token:   common.BytesToAddress(data[224:256]),
-			PerUnit: big.NewInt(0).SetBytes(data[256:288]),
-		},
-		GasGuarantee: pgas.GasPayment{
-			Token:   common.BytesToAddress(data[288:320]),
-			PerUnit: big.NewInt(0).SetBytes(data[320:352]),
-		},
-	}, nil
 }

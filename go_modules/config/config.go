@@ -194,13 +194,13 @@ func loadPkey(validator, executor bool) error {
 func loadDelays(v_start_delay, x_check_delay bool) error {
 	if num, err := strconv.ParseUint(os.Getenv("MIN_START_DELAY"), 10, 32); v_start_delay && err != nil {
 		return errors.New("config: min start delay load: " + err.Error())
-	} else {
+	} else if v_start_delay {
 		MinStartDelay = uint32(num)
 	}
 
 	if num, err := strconv.ParseUint(os.Getenv("PREVALIDATE_DELAY"), 10, 32); x_check_delay && err != nil {
 		return errors.New("config: prevalidate delay load: " + err.Error())
-	} else {
+	} else if x_check_delay {
 		PrevalidateDelay = uint32(num)
 	}
 
@@ -210,7 +210,7 @@ func loadDelays(v_start_delay, x_check_delay bool) error {
 func loadHTTP(validator_port bool) error {
 	if num, err := strconv.ParseUint(os.Getenv("VALIDATOR_PORT"), 10, 16); validator_port && err != nil {
 		return errors.New("config: validator port load: " + err.Error())
-	} else {
+	} else if validator_port {
 		ValidatorPort = uint16(num)
 	}
 
