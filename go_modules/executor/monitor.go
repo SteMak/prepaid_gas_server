@@ -60,7 +60,9 @@ func planMessage(message structs.Message, sign structs.Signature) {
 			return
 		}
 
+		log.Printf("message nonce check planned: \"%#v\"\n", message)
 		time.Sleep(time.Second * time.Duration(sleep.Int64()))
+
 		used, _ := onchain.PGas.Nonce(nil, common.Address(message.From), message.Nonce.ToBig())
 		if used {
 			log.Printf("message nonce already used: \"%#v\"\n", message)
@@ -74,9 +76,10 @@ func planMessage(message structs.Message, sign structs.Signature) {
 		return
 	}
 
+	log.Printf("message planned: \"%#v\"\n", message)
 	time.Sleep(time.Second * time.Duration(sleep.Int64()))
-	_, err := onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
 
+	_, err := onchain.PGas.Execute(onchain.Transactor, onchain.WrapPGasMessage(message), sign.ToOnchain())
 	for err != nil {
 		log.Printf("message execute: \"%#v\" %s\n", message, err.Error())
 
