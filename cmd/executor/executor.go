@@ -32,7 +32,12 @@ func main() {
 	}
 	defer db.DB.Close()
 
-	if err := executor.Init(config.PGasAddress, config.ExecutorAddress, config.PrevalidateDelay); err != nil {
+	if err := executor.Init(
+		config.PGasAddress,
+		config.ExecutorAddress,
+		config.PrevalidateDelay,
+		config.SubscriptionRenew,
+	); err != nil {
 		log.Fatalln(err.Error())
 	}
 	executor.Start()

@@ -18,9 +18,9 @@ var (
 	offset uint64
 )
 
-func Init(pgas_address, executor common.Address, prevalidate_delay uint32) error {
+func Init(pgas_address, executor common.Address, prevalidate_delay, sub_renew uint32) error {
 	initMonitor(prevalidate_delay)
-	if err := initAcceptor(pgas_address); err != nil {
+	if err := initAcceptor(pgas_address, sub_renew); err != nil {
 		return err
 	}
 

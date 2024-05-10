@@ -21,9 +21,10 @@ var (
 	query        ethereum.FilterQuery
 	events       = make(chan types.Log)
 	subscription ethereum.Subscription
+	sub_renew    *time.Ticker
 )
 
-func initAcceptor(pgas_address common.Address) error {
+func initAcceptor(pgas_address common.Address, renew_time uint32) error {
 	query = ethereum.FilterQuery{
 		Addresses: []common.Address{pgas_address},
 		Topics: [][]common.Hash{{common.BytesToHash(crypto.Keccak256([]byte(
@@ -31,10 +32,10 @@ func initAcceptor(pgas_address common.Address) error {
 		)))}},
 	}
 
-	if sub, err := onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events); err != nil {
-		return errors.New("subscription: " + err.Error())
-	} else {
-		subscription = sub
+	sub_renew = time.NewTicker(time.Duration(renew_time) * time.Second)
+
+	if err := subscribe(); err != nil {
+		return err
 	}
 
 	return nil
@@ -43,13 +44,16 @@ func initAcceptor(pgas_address common.Address) error {
 func acceptor() {
 	for {
 		select {
+		case <-sub_renew.C:
+			log.Printf("subscription: timer renew\n\n")
+			resubscribe()
 		case err := <-subscription.Err():
-			for err != nil {
+			if err != nil {
 				log.Printf("subscription: %s\n\n", err.Error())
-				time.Sleep(time.Second)
-
-				subscription, err = onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events)
+			} else {
+				log.Printf("subscription: dead nil\n\n")
 			}
+			resubscribe()
 		case event := <-events:
 			order, err := onchain.WrapPGasOrder(event.Data)
 			if err != nil {
@@ -65,6 +69,26 @@ func acceptor() {
 
 			planOrder(id, order)
 		}
+	}
+}
+
+func subscribe() error {
+	if sub, err := onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events); err != nil {
+		return errors.New("subscribe: " + err.Error())
+	} else {
+		subscription = sub
+	}
+
+	return nil
+}
+
+func resubscribe() {
+	err := subscribe()
+	for err != nil {
+		log.Printf("re%s\n\n", err.Error())
+		time.Sleep(time.Second)
+
+		err = subscribe()
 	}
 }
 

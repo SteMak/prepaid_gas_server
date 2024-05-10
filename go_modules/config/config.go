@@ -18,7 +18,6 @@ import (
 var (
 	PostgresUser     string
 	PostgresPassword string
-	DBPort           uint16
 
 	ProviderHTTP *url.URL
 	ProviderWS   *url.URL
@@ -35,10 +34,12 @@ var (
 	ExecutorPkey    *ecdsa.PrivateKey
 	ExecutorAddress common.Address
 
-	MinStartDelay    uint32
-	PrevalidateDelay uint32
+	MinStartDelay     uint32
+	PrevalidateDelay  uint32
+	SubscriptionRenew uint32
 
 	ValidatorPort uint16
+	DBPort        uint16
 )
 
 func InitValidator() error {
@@ -47,7 +48,7 @@ func InitValidator() error {
 	}
 
 	loadPostgres()
-	if err := loadProvider(true, false); err != nil {
+	if err := loadProviders(true, false); err != nil {
 		return err
 	}
 	if err := loadAddresses(true, false); err != nil {
@@ -56,10 +57,10 @@ func InitValidator() error {
 	if err := loadChainDetails(false, false, false, true); err != nil {
 		return err
 	}
-	if err := loadPkey(true, false); err != nil {
+	if err := loadPkeys(true, false); err != nil {
 		return err
 	}
-	if err := loadDelays(true, false); err != nil {
+	if err := loadPeriods(true, false, false); err != nil {
 		return err
 	}
 	if err := loadPorts(true, true); err != nil {
@@ -75,7 +76,7 @@ func InitExecutor() error {
 	}
 
 	loadPostgres()
-	if err := loadProvider(true, true); err != nil {
+	if err := loadProviders(true, true); err != nil {
 		return err
 	}
 	if err := loadAddresses(true, true); err != nil {
@@ -84,10 +85,10 @@ func InitExecutor() error {
 	if err := loadChainDetails(true, true, true, false); err != nil {
 		return err
 	}
-	if err := loadPkey(false, true); err != nil {
+	if err := loadPkeys(false, true); err != nil {
 		return err
 	}
-	if err := loadDelays(false, true); err != nil {
+	if err := loadPeriods(false, true, true); err != nil {
 		return err
 	}
 	if err := loadPorts(true, false); err != nil {
@@ -110,7 +111,7 @@ func loadPostgres() {
 	PostgresPassword = os.Getenv("POSTGRES_PASSWORD")
 }
 
-func loadProvider(http, websocket bool) error {
+func loadProviders(http, websocket bool) error {
 	if link, err := url.Parse(os.Getenv("PROVIDER_HTTP")); http && err != nil {
 		return errors.New("config: http provider load: " + err.Error())
 	} else if http {
@@ -170,7 +171,7 @@ func loadChainDetails(gasfeecap, gastipcap, chain_id, separator bool) error {
 	return nil
 }
 
-func loadPkey(validator, executor bool) error {
+func loadPkeys(validator, executor bool) error {
 	if pkey, err := crypto.HexToECDSA(os.Getenv("VALIDATOR_PKEY")); validator && err != nil {
 		return errors.New("config: validator pkey load: " + err.Error())
 	} else if _, err := crypto.Sign(crypto.Keccak256(), pkey); validator && err != nil {
@@ -191,7 +192,7 @@ func loadPkey(validator, executor bool) error {
 	return nil
 }
 
-func loadDelays(v_start_delay, x_check_delay bool) error {
+func loadPeriods(v_start_delay, x_check_delay, sub_renew bool) error {
 	if num, err := strconv.ParseUint(os.Getenv("MIN_START_DELAY"), 10, 32); v_start_delay && err != nil {
 		return errors.New("config: min start delay load: " + err.Error())
 	} else if v_start_delay {
@@ -202,6 +203,12 @@ func loadDelays(v_start_delay, x_check_delay bool) error {
 		return errors.New("config: prevalidate delay load: " + err.Error())
 	} else if x_check_delay {
 		PrevalidateDelay = uint32(num)
+	}
+
+	if num, err := strconv.ParseUint(os.Getenv("SUBSCRIPTION_RENEW"), 10, 32); sub_renew && err != nil {
+		return errors.New("config: subscription renew load: " + err.Error())
+	} else if sub_renew {
+		SubscriptionRenew = uint32(num)
 	}
 
 	return nil
