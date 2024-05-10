@@ -17,11 +17,12 @@ func main() {
 	if err := onchain.InitValidator(config.ProviderHTTP, config.PGasAddress, config.DomainSeparator); err != nil {
 		log.Fatalln(err.Error())
 	}
+	defer onchain.Close()
 
 	if err := db.Init(config.PostgresUser, config.PostgresPassword, config.DBPort); err != nil {
 		log.Fatalln(err.Error())
 	}
-	defer db.DB.Close()
+	defer db.Close()
 
 	validator.Init(config.MinStartDelay, config.DomainSeparator, config.ValidatorPkey)
 	validator.Start(config.ValidatorPort)

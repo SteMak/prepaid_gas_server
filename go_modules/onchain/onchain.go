@@ -86,6 +86,16 @@ func InitExecutor(
 	return nil
 }
 
+func Close() {
+	if ClientHTTP != nil {
+		ClientHTTP.Close()
+	}
+
+	if ClientWS != nil {
+		ClientWS.Close()
+	}
+}
+
 func dialProviderHTTP(provider *url.URL) error {
 	if client, err := ethclient.Dial(provider.String()); err != nil {
 		return errors.New("onchain: ethclient dial error: " + err.Error())

@@ -26,11 +26,12 @@ func main() {
 	); err != nil {
 		log.Fatalln(err.Error())
 	}
+	defer onchain.Close()
 
 	if err := db.Init(config.PostgresUser, config.PostgresPassword, config.DBPort); err != nil {
 		log.Fatalln(err.Error())
 	}
-	defer db.DB.Close()
+	defer db.Close()
 
 	if err := executor.Init(
 		config.PGasAddress,

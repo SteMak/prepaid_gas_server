@@ -18,10 +18,12 @@ import (
 )
 
 var (
-	query        ethereum.FilterQuery
-	events       = make(chan types.Log)
+	query ethereum.FilterQuery
+
+	events       chan types.Log
 	subscription ethereum.Subscription
-	sub_renew    *time.Ticker
+
+	sub_renew *time.Ticker
 )
 
 func initAcceptor(pgas_address common.Address, renew_time uint32) error {
@@ -73,6 +75,9 @@ func acceptor() {
 }
 
 func subscribe() error {
+	unsubscribe()
+
+	events = make(chan types.Log)
 	if sub, err := onchain.ClientWS.SubscribeFilterLogs(context.Background(), query, events); err != nil {
 		return errors.New("subscribe: " + err.Error())
 	} else {
@@ -89,6 +94,16 @@ func resubscribe() {
 		time.Sleep(time.Second)
 
 		err = subscribe()
+	}
+}
+
+func unsubscribe() {
+	if subscription != nil {
+		subscription.Unsubscribe()
+	}
+
+	if events != nil {
+		close(events)
 	}
 }
 

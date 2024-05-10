@@ -37,6 +37,10 @@ func Init(user, password string, port uint16) error {
 	return nil
 }
 
+func Close() {
+	DB.Close()
+}
+
 func InitMessages() error {
 	if sql, err := os.ReadFile(filepath.Join("sql", "messages.up.sql")); err != nil {
 		return errors.New("db: messages up script read error: " + err.Error())
