@@ -18,6 +18,7 @@ import (
 var (
 	PostgresUser     string
 	PostgresPassword string
+	DBPort           uint16
 
 	ProviderHTTP *url.URL
 	ProviderWS   *url.URL
@@ -61,7 +62,7 @@ func InitValidator() error {
 	if err := loadDelays(true, false); err != nil {
 		return err
 	}
-	if err := loadHTTP(true); err != nil {
+	if err := loadPorts(true, true); err != nil {
 		return err
 	}
 
@@ -89,7 +90,7 @@ func InitExecutor() error {
 	if err := loadDelays(false, true); err != nil {
 		return err
 	}
-	if err := loadHTTP(false); err != nil {
+	if err := loadPorts(true, false); err != nil {
 		return err
 	}
 
@@ -206,10 +207,16 @@ func loadDelays(v_start_delay, x_check_delay bool) error {
 	return nil
 }
 
-func loadHTTP(validator_port bool) error {
-	if num, err := strconv.ParseUint(os.Getenv("VALIDATOR_PORT"), 10, 16); validator_port && err != nil {
+func loadPorts(db, validator_http bool) error {
+	if num, err := strconv.ParseUint(os.Getenv("DB_PORT"), 10, 16); db && err != nil {
+		return errors.New("config: db port load: " + err.Error())
+	} else if db {
+		DBPort = uint16(num)
+	}
+
+	if num, err := strconv.ParseUint(os.Getenv("VALIDATOR_PORT"), 10, 16); validator_http && err != nil {
 		return errors.New("config: validator port load: " + err.Error())
-	} else if validator_port {
+	} else if validator_http {
 		ValidatorPort = uint16(num)
 	}
 

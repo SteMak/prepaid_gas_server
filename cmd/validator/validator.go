@@ -18,7 +18,7 @@ func main() {
 		log.Fatalln(err.Error())
 	}
 
-	if err := db.Init(config.PostgresUser, config.PostgresPassword); err != nil {
+	if err := db.Init(config.PostgresUser, config.PostgresPassword, config.DBPort); err != nil {
 		log.Fatalln(err.Error())
 	}
 	defer db.DB.Close()

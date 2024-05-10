@@ -19,10 +19,10 @@ var (
 	DB *sqlx.DB
 )
 
-func Init(user, password string) error {
+func Init(user, password string, port uint16) error {
 	connect := fmt.Sprintf(
-		"user=%s password=%s dbname=postgres sslmode=disable",
-		user, password,
+		"user=%s password=%s dbname=postgres sslmode=disable port=%s",
+		user, password, strconv.FormatUint(uint64(port), 10),
 	)
 	if db, err := sqlx.Connect("postgres", connect); err != nil {
 		return errors.New("db: connection error: " + err.Error())
