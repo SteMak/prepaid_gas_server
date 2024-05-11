@@ -38,8 +38,8 @@ var (
 	PrevalidateDelay  uint32
 	SubscriptionRenew uint32
 
-	ValidatorPort uint16
 	DBPort        uint16
+	ValidatorPort uint16
 )
 
 func InitValidator() error {
