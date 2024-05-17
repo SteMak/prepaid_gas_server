@@ -32,8 +32,16 @@ func Init(start_delay uint32, domain_separator structs.Hash, validator_key *ecds
 
 func Start(port uint16) {
 	for {
-		if err := http.ListenAndServe(":"+strconv.FormatUint(uint64(port), 10), nil); err != nil {
-			log.Printf("listen and serve: %s\n\n", err.Error())
+		if port == 443 {
+			if err := http.ListenAndServeTLS(
+				":"+strconv.FormatUint(uint64(port), 10), "ssl/server.crt", "ssl/server.key", nil,
+			); err != nil {
+				log.Printf("listen and serve https: %s\n\n", err.Error())
+			}
+		} else {
+			if err := http.ListenAndServe(":"+strconv.FormatUint(uint64(port), 10), nil); err != nil {
+				log.Printf("listen and serve http: %s\n\n", err.Error())
+			}
 		}
 
 		time.Sleep(time.Second)

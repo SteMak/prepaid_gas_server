@@ -1,2 +1,8 @@
 .env
 .vscode
+
+*.crt
+*.key
+*.pem
+
+build
